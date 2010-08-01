@@ -14,7 +14,7 @@
 (function() {
   // CONST
   var unsafeWindow = this['unsafeWindow'] || window;
-  var VER = '1.9.0';
+  var VER = '2.0.0';
 
   // it's not jquery, don't use it in your next project :)
   var $ = function(selector) {
