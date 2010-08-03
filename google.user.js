@@ -1,14 +1,16 @@
 // ==UserScript==
-// @name           Google++
-// @namespace      http://www.5isharing.com/
-// @version        2.0.0
-// @description    Ready for the Google++ 2.0
-// @include        http://www.google.tld/search?*
-// @include        http://www.google.tld/webhp?*
-// @include        http://www.google.tld/#*
-// @include        http://www.google.tld/ig?*
-// @include        https://www.google.tld/search?*
-// @include        https://encrypted.google.com/search?*
+// @name          Google++
+// @namespace     http://www.5isharing.com/
+// @version       2.0.0
+// @description   Ready for the Google++ 2.0
+// @include       http://www.google.tld/search?*
+// @include       http://www.google.tld/webhp?*
+// @include       http://www.google.tld/#*
+// @include       http://www.google.tld/ig?*
+// @include       https://www.google.tld/search?*
+// @include       https://encrypted.google.com/search?*
+// @copyright     2009+, chrisyue
+// @license       GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // ==/UserScript==
 
 (function() {
@@ -133,11 +135,11 @@
         });
         return this;
       },
-			unbind: function(event, callback) { // go $.unbind
-				this.each(function(i, dom) {
-					dom.removeEventListener(event, callback, false);
-				});
-			},
+      unbind: function(event, callback) { // go $.unbind
+        this.each(function(i, dom) {
+          dom.removeEventListener(event, callback, false);
+        });
+      },
       width: function() { // go $.width
         return this.doms[0].clientWidth;
       },
@@ -271,7 +273,7 @@
       return ret;
     }
   };
-	// go gm api
+  // go gm api
   var gm = {
     get: (function() {
       if (GM_getValue) {
@@ -357,15 +359,15 @@
     },
     show: function() {
       this.getInst().removeClass('gpp-hidden');
-			return this;
+      return this;
     },
     hide: function() {
       var shadow = this.getInst().addClass('gpp-hidden');
-			if (this.callback) {
-				shadow.unbind('click', this.callback);
-				delete this.callback;
-			}
-			return this;
+      if (this.callback) {
+        shadow.unbind('click', this.callback);
+        delete this.callback;
+      }
+      return this;
     },
     createShadow: function() {
       gm.css('#gpp-cfg-shadow {\
@@ -381,17 +383,17 @@
       return $('<div>').attr({'id': 'gpp-cfg-shadow'}).appendTo('body');
     },
     click: function(callback) { // go shadow.click
-			this.callback = callback;
-			this.getInst().bind('click', this.callback);
-			return this;
+      this.callback = callback;
+      this.getInst().bind('click', this.callback);
+      return this;
     }
   };
 
-	// go cfgWidget
-	var cfgWidget = {
-		// go cfgWidget.number
+  // go cfgWidget
+  var cfgWidget = {
+    // go cfgWidget.number
     addNbCss: false,
-		number: function(id, val, min, max) {
+    number: function(id, val, min, max) {
       if (!this.addNbCss) {
         gm.css('.gpp-cfg-minus, .gpp-cfg-screen, .gpp-cfg-plus {\
           float: left;\
@@ -435,13 +437,13 @@
         }');
         this.addClass = true;
       }
-			if (typeof min !== 'number') min = 1;
-			if (typeof max !== 'number') max = 999;
-			var container = $('<div>').addClass('gpp-cfg-numberTuner')
+      if (typeof min !== 'number') min = 1;
+      if (typeof max !== 'number') max = 999;
+      var container = $('<div>').addClass('gpp-cfg-numberTuner')
         .attr({'id': 'gpp-' + id}); // add this to make disable work
       var set = setting[id];
       // minus
-			var mns = $('<div>').appendTo(container).bind('click', function(e) {
+      var mns = $('<div>').appendTo(container).bind('click', function(e) {
         var self = $(this);
         var dsp = self.next();
         var num = parseInt(dsp.html());
@@ -454,9 +456,9 @@
         set.changed = true;
       }).addClass('gpp-cfg-minus').html('-'); 
       // display
-			var dsp = $('<div>').appendTo(container).html(val).addClass('gpp-cfg-screen'); 
+      var dsp = $('<div>').appendTo(container).html(val).addClass('gpp-cfg-screen'); 
       // plus
-			var pls = $('<div>').appendTo(container).bind('click', function() {
+      var pls = $('<div>').appendTo(container).bind('click', function() {
         var self = $(this);
         var dsp = self.prev();
         var num = parseInt(dsp.html());
@@ -470,11 +472,11 @@
       }).addClass('gpp-cfg-plus').html('+'); 
       this.disable(id, container);
 
-			return container;
-		},
-		// go cfgWidget.choice
+      return container;
+    },
+    // go cfgWidget.choice
     addChoicesCss: false,
-		choices: function(id, val, choices) {
+    choices: function(id, val, choices) {
       if (!this.addChoicesCss) {
         gm.css('.gpp-cfg-choiceContainer {\
           float: left;\
@@ -518,7 +520,7 @@
         }');
         this.addChoicesCss = true;
       }
-		  var container = $('<div>').addClass('gpp-cfg-choiceContainer')
+      var container = $('<div>').addClass('gpp-cfg-choiceContainer')
         .attr({'id': 'gpp-' + id}); // add this to make disable work
       var cur;
       for (var cid in choices) {
@@ -541,7 +543,7 @@
       }
       this.disable(id, container);
       return container;
-		},
+    },
     switch: (function() {
       var choices = {'1': __('Yes'), '0': __('No')};
       return function(id, val) {
@@ -651,14 +653,15 @@
     })(),
     // go cfgWidget.text
     text: function(id, val) {
+      var set = setting[id];
       var ret = $('<textarea>').bind('blur', function() {
         var self = $(this);
         set.val = self.val();
-        set.change = true;
+        set.changed = true;
       }).attr({
         'cols': '30',
         'rows': '5'
-      });
+      }).val(val);
       return ret;
     },
     disable: function(id, container) {
@@ -677,7 +680,7 @@
         }
       }
     }
-	};
+  };
 
   // go configuration
   var cfg = {
@@ -855,8 +858,8 @@
     show: function() {
       if (!this.content && !this.btnContainer) {
         this.initData();
-				this.content      = this.createContent().appendTo('body');
-				this.btnContainer = this.createBtnContainer().appendTo('body');
+        this.content      = this.createContent().appendTo('body');
+        this.btnContainer = this.createBtnContainer().appendTo('body');
         // go css cfg
         gm.css('#gpp-cfg-content {\
           position: fixed;\
@@ -1049,6 +1052,14 @@
     cleaner: {
       group: group.miscellaneous,
       name: __('Cleaner')
+    },
+    rsEnrichment: {
+      group: group.enhancement,
+      name: __('Result enrichment')
+    },
+    otherRs: {
+      group: group.enhancement,
+      name: __('Other result'),
     }
   };
 
@@ -1056,7 +1067,7 @@
   var groupLv3 = {
     // go cols
     cols: {
-			name: __('Multi-column'),
+      name: __('Multi-column'),
       groupLv2: groupLv2.layout
     },
     leftSidebar: {
@@ -1098,6 +1109,10 @@
     adCleaner: {
       name: __('Ad remover'),
       groupLv2: groupLv2.cleaner
+    },
+    image: {
+      name: __('Image'),
+      groupLv2: groupLv2.rsEnrichment
     }
   }
 
@@ -1105,10 +1120,10 @@
   var setting = {
     // go cols setting
     colsNb: {
-			name: __('Columns'),
+      name: __('Columns'),
       groupLv3: groupLv3.cols,
-			val: gm.get('gpp-colsNb', 2),
-			html: function() { 
+      val: gm.get('gpp-colsNb', 2),
+      html: function() { 
         // i'd like it to be a fn 'cause it shouldn't run at start
         // and if it's not a fn, 'this.val' is undefined
         return cfgWidget.number(this.id, this.val, 1);
@@ -1274,6 +1289,26 @@
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
+    },
+    favicon: {
+      name: __('Favicon'),
+      groupLv3: groupLv3.image,
+      val: gm.get('gpp-favicon', 1),
+      html: function() {
+        return cfgWidget.switch(this.id, this.val);
+      }
+    },
+    preview: {
+      name: __('Preview'),
+      groupLv3: groupLv3.image,
+      val: gm.get('gpp-preview', '2'),
+      html: function() {
+        return cfgWidget.choices(this.id, this.val, {
+          '1': __('None'),
+          '2': __('Google Preview'),
+          '3': __('Other Preview')
+        });
+      }
     }
   };
   
@@ -1420,7 +1455,10 @@
     },
     userstyle: {
       run: function() {
-        
+        var css = setting.css.val();
+        if (css) {
+          gm.css(css);
+        }
       }
     },
     // go autoHideLeftSidebar
