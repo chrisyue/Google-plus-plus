@@ -3,10 +3,7 @@
 // @namespace     http://www.5isharing.com/
 // @version       2.0.0
 // @description   Ready for the Google++ 2.0
-// @include       http://www.google.tld/search?*
-// @include       http://www.google.tld/webhp?*
-// @include       http://www.google.tld/#*
-// @include       http://www.google.tld/ig?*
+// @include       http://www.google.tld/*
 // @include       https://www.google.tld/search?*
 // @include       https://encrypted.google.com/search?*
 // @copyright     2009+, chrisyue
@@ -1102,6 +1099,10 @@
       name: __('Font'),
       groupLv2: groupLv2.otherUi
     },
+    image: {
+      name: __('Image'),
+      groupLv2: groupLv2.otherUi
+    },
     userstyle: {
       name: __('User style'),
       groupLv2: groupLv2.advancedUi
@@ -1110,7 +1111,7 @@
       name: __('Ad remover'),
       groupLv2: groupLv2.cleaner
     },
-    image: {
+    imageRs: {
       name: __('Image'),
       groupLv2: groupLv2.rsEnrichment
     }
@@ -1274,6 +1275,17 @@
         });
       }
     },
+    imageStyle: {
+      name: __('style'),
+      groupLv3: groupLv3.image,
+      val: gm.get('gpp-imageStyle', '2'),
+      html: function() {
+        return cfgWidget.choices(this.id, this.val, {
+          '1': __('Default'),
+          '2': __('Glass frame')
+        });
+      }
+    },
     css: {
       name: __('CSS'),
       groupLv3: groupLv3.userstyle,
@@ -1292,7 +1304,7 @@
     },
     favicon: {
       name: __('Favicon'),
-      groupLv3: groupLv3.image,
+      groupLv3: groupLv3.imageRs,
       val: gm.get('gpp-favicon', 1),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
@@ -1300,7 +1312,7 @@
     },
     preview: {
       name: __('Preview'),
-      groupLv3: groupLv3.image,
+      groupLv3: groupLv3.imageRs,
       val: gm.get('gpp-preview', '2'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
@@ -1453,9 +1465,21 @@
         ');
       }
     },
+    imageStyle: {
+      run: function() {
+        var type = setting.imageStyle.val;
+        if (type == 1) return ;
+        gm.css('a > img {\
+          border: 0;\
+          -moz-box-shadow: 0 1px 5px #000;\
+          opacity: .8;\
+        }');
+      }
+    },
+    // go userstyle
     userstyle: {
       run: function() {
-        var css = setting.css.val();
+        var css = setting.css.val;
         if (css) {
           gm.css(css);
         }
@@ -1692,12 +1716,6 @@
         return rootDomain;
       }
     },
-    userstyle: {
-      run: function() {
-        var css = setting.css.val;
-        if (css) gm.css(css);
-      }
-    },
     sponsoredLinks: {
       run: function() {
         if (!setting.sponsoredLinks.val) return ;
@@ -1763,7 +1781,7 @@
     }
   };
   // go app.run()
-  if (location.search) {
+  if ($('.g').size()) {
     app.run();
   } else {
     addEventListener('DOMNodeInserted', app.run, false);
