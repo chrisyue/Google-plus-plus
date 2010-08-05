@@ -188,6 +188,7 @@
         this.each(function(i, dom) {
           target.doms[0].parentNode.insertAfter(dom, target.doms[0]);
         });
+        return this;
       },
       insertBefore: function(target) { // go $.insertBefore
         if (typeof target === 'string') {
@@ -196,6 +197,7 @@
         this.each(function(i, dom) {
           target.doms[0].parentNode.insertBefore(dom, target.doms[0]);
         });
+        return this;
       },
       parent: function() { // go $.parent
         var ret = [];
@@ -603,7 +605,7 @@
         set.changed = true;
       };
       return function(id, val) {
-        var drag = false;
+        var drag = false; // i mean draggable
         var set = setting[id];
         var div = $('<div>').addClass('gpp-cfg-colorpicker')
           .attr({'id': 'gpp-' + id}); // add this to make disable work
@@ -887,7 +889,7 @@
           font-size: 15px;\
           margin: 0;\
           padding: 5px 10px;\
-          height: 280px;\
+          height: 260px;\
           background: -moz-linear-gradient(top, #999, #fff 5%, #def);\
         }\
         #gpp-cfg-content dt:not(.gpp-cfg-currentTab) + dd {\
@@ -951,6 +953,8 @@
         .gpp-cfg-tableContainer {\
           float: left;\
           padding: 6px 0;\
+          height: 220px;\
+          overflow-y: scroll;\
         }\
         .gpp-cfg-tableContainer table {\
           border-left: 1px solid #aaa;\
@@ -1091,16 +1095,16 @@
       name: __('Color'),
       groupLv2: groupLv2.rs
     },
+    rsImage: {
+      name: __('Image'),
+      groupLv2: groupLv2.rs
+    },
     background: {
       name: __('Background'),
       groupLv2: groupLv2.otherUi
     },
     font: {
       name: __('Font'),
-      groupLv2: groupLv2.otherUi
-    },
-    image: {
-      name: __('Image'),
       groupLv2: groupLv2.otherUi
     },
     userstyle: {
@@ -1245,6 +1249,17 @@
         });
       }
     },
+    rsImageStyle: {
+      name: __('style'),
+      groupLv3: groupLv3.rsImage,
+      val: gm.get('gpp-imageStyle', '2'),
+      html: function() {
+        return cfgWidget.choices(this.id, this.val, {
+          '1': __('Default'),
+          '2': __('Glass frame')
+        });
+      }
+    },
     backgroundColor: {
       name: __('Color'),
       groupLv3: groupLv3.background,
@@ -1272,17 +1287,6 @@
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Default'),
           '2': __('Reverse')
-        });
-      }
-    },
-    imageStyle: {
-      name: __('style'),
-      groupLv3: groupLv3.image,
-      val: gm.get('gpp-imageStyle', '2'),
-      html: function() {
-        return cfgWidget.choices(this.id, this.val, {
-          '1': __('Default'),
-          '2': __('Glass frame')
         });
       }
     },
@@ -1450,8 +1454,11 @@
         #gsr a:link {\
           color: #dd1\
         }\
-        a.gb1:link, a.gb2:link, a.gb3:link, a.gb4:link {\
+        .gb1:link, .gb2:link, .gb3:link, .gb4:link {\
           color: #dd1 !important;\
+        }\
+        #guser {\
+          color: #ddd;\
         }\
         #gsr a:visited {\
           color: #11c;\
@@ -1463,17 +1470,6 @@
           color: #fff !important;\
         }\
         ');
-      }
-    },
-    imageStyle: {
-      run: function() {
-        var type = setting.imageStyle.val;
-        if (type == 1) return ;
-        gm.css('a > img {\
-          border: 0;\
-          -moz-box-shadow: 0 1px 5px #000;\
-          opacity: .8;\
-        }');
       }
     },
     // go userstyle
@@ -1648,7 +1644,16 @@
           var rgb = setting.rsColorSchema.val.split(',');
           rscss += 'background: ' + this.bgCss(rgb, eff) + ';';
         }
-
+        // image
+        var type = setting.rsImageStyle.val;
+        if (type == 2) {
+          css += '.gpp-rs a > img {\
+            border: 0;\
+            -moz-box-shadow: 0 1px 5px #000;\
+            opacity: .8;\
+          }';
+        }
+        // main css
         gm.css('.gpp-rs {' + rscss + '}' + css);
       },
       bgCss: function(rgb, eff) {
@@ -1721,7 +1726,37 @@
         if (!setting.sponsoredLinks.val) return ;
         gm.css('#tads {display: none}');
       }
-    }
+    },
+    favicon: {
+      run: function() {
+        if (setting.favicon.val == 0) return ;
+        if (!this.addedCss) {
+          gm.css('img.gpp-favicon {\
+            width: 16px;\
+            height: 16px;\
+            margin: 0 5px 0 0;\
+            position: relative;\
+            top: 2px;\
+          }');
+          this.addedCss = true;
+        }
+        $('.gpp-rs').each(function(i, dom) {
+          var cur = $(dom);
+          cur.addClass('gpp-favicon');
+          var a = cur.children('.r > a');
+          var img = new Image();
+          img.src = 'http://' + a.attr('hostname') + '/favicon.ico';
+          img.addEventListener('load', function() {
+            if (img.complete) {
+              $(img).attr({
+                'alt': '',
+                'width': '16',
+              }).insertBefore(a).addClass('gpp-favicon');
+            }
+          }, false);
+        });
+      }
+    },
   };
 
   // go app
