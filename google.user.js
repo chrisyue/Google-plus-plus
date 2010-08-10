@@ -370,8 +370,19 @@
       }
       return this.inst;
     },
+    addCss: function() {
+      gm.css('.gpp-shadowBox {\
+        position: fixed;\
+        z-index: 200;\
+      }');
+    },
     show: function() {
+      if (!this.addedCss) {
+        this.addCss();
+        this.addedCss = true;
+      }
       this.getInst().removeClass('gpp-hidden');
+      this.centerBox();
       return this;
     },
     hide: function() {
@@ -399,7 +410,29 @@
       this.callback = callback;
       this.getInst().bind('click', this.callback);
       return this;
-    }
+    },
+    setBox: function(box) {
+      this.box = box;
+      return this;
+    },
+    centerBox: (function() {
+      var html = document.documentElement;
+      return function() {
+        if (this.box) {
+          this.box.css({
+            top: html.clientHeight / 2 
+              - this.box.height() / 2 
+              + 'px',
+            left: html.clientWidth / 2 
+              - this.box.width() / 2 
+              + 'px'
+          });
+        } else {
+          gm.log('No box been set');
+        }
+        return this;
+      };
+    })()
   };
 
   // go cfgWidget
@@ -721,10 +754,9 @@
       }');
       return btn;
     })(),
-
     // go cfg.createcontent
     createContent: function() {
-      var dl = $('<dl>').attr({'id': 'gpp-cfg-content'});
+      var dl = $('<dl>').attr({'id': 'gpp-cfg-content'}).addClass('gpp-shadowBox');
       for (var cid in group) {
         var com = group[cid];
         cfg.createDt(com).appendTo(dl);
@@ -875,11 +907,9 @@
         this.btnContainer = this.createBtnContainer().appendTo('body');
         // go css cfg
         gm.css('#gpp-cfg-content {\
-          position: fixed;\
-          z-index: 200;\
           width: 560px;\
           background: #fff;\
-          -moz-box-shadow: 0 5px 10px #333;\
+          -moz-box-shadow: 0 5px 10px #111;\
           font-family: Tahoma, Helvetica, Arial, Sans-serif;\
           margin: 0;\
           color: #222;\
@@ -995,17 +1025,7 @@
         this.content.removeClass('gpp-hidden');
         this.btnContainer.removeClass('gpp-hidden');
       }
-      shadow.click(this.hide).show();
-      // adjust the position of panel;
-      var html = document.documentElement;
-      this.content.css({
-        top: html.clientHeight / 2 
-          - this.content.height() / 2 
-          + 'px',
-        left: html.clientWidth / 2 
-          - this.content.width() / 2 
-          + 'px'
-      });
+      shadow.click(this.hide).setBox(this.content).show();
       var pos = this.content.offset();
       this.btnContainer.css({
         top: pos.top 
@@ -1141,7 +1161,7 @@
     colsNb: {
       name: __('Columns'),
       groupLv3: groupLv3.cols,
-      val: gm.get('gpp-colsNb', 2),
+      val: gm.get('gpp-colsNb', '1'),
       html: function() { 
         // i'd like it to be a fn 'cause it shouldn't run at start
         // and if it's not a fn, 'this.val' is undefined
@@ -1151,7 +1171,7 @@
     colsOrder: {
       name: __('Order'),
       groupLv3: groupLv3.cols,
-      val: gm.get('gpp-colsOrder', 2), // 1: left2right 2: top2bottom
+      val: gm.get('gpp-colsOrder', '2'), // 1: left2right 2: top2bottom
       html: function() {
         return cfgWidget.choices(this.id, this.val, 
           {'1': __('Left to right'), '2':__('Top to bottom')}
@@ -1159,14 +1179,14 @@
       },
       rely: 'colsNb',
       disabled: function() {
-        return setting[this.rely].val == 1;
+        return setting[this.rely].val == '1';
       }
     },
     // go left sidebar setting
     autoHideLeftSidebar: {
       name: __('Auto hide'),
       groupLv3: groupLv3.leftSidebar,
-      val: gm.get('gpp-autoHideLeftSidebar', 1),
+      val: gm.get('gpp-autoHideLeftSidebar', '0'),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
@@ -1175,7 +1195,7 @@
     autoHideRightSidebar: {
       name: __('Auto hide'),
       groupLv3: groupLv3.rightSidebar,
-      val: gm.get('gpp-autoHideRightSidebar', 1),
+      val: gm.get('gpp-autoHideRightSidebar', '0'),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
@@ -1184,7 +1204,7 @@
     fixedSearchbar: {
       name: __('Fixed on top'),
       groupLv3: groupLv3.searchbar,
-      val: gm.get('gpp-fixedSearchbar', 0),
+      val: gm.get('gpp-fixedSearchbar', '0'),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
@@ -1193,7 +1213,7 @@
     rsShadow: {
       name: __('Shadow'),
       groupLv3: groupLv3.rsBorder,
-      val: gm.get('gpp-rsShadow', 5),
+      val: gm.get('gpp-rsShadow', '0'),
       html: function() {
         return cfgWidget.number(this.id, this.val, 0);
       }
@@ -1201,7 +1221,7 @@
     rsRadius: {
       name: __('Radius'),
       groupLv3: groupLv3.rsBorder,
-      val: gm.get('gpp-rsRadius', '10'),
+      val: gm.get('gpp-rsRadius', '0'),
       html: function() {
         return cfgWidget.number(this.id, this.val, 0);
       }
@@ -1217,7 +1237,7 @@
     rsFontEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.rsFont,
-      val: gm.get('gpp-rsFontEffect', '2'),
+      val: gm.get('gpp-rsFontEffect', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Default'),
@@ -1230,7 +1250,7 @@
     rsColorMethod: {
       name: __('Method'),
       groupLv3: groupLv3.rsColor,
-      val: gm.get('gpp-rsColorMethod', '3'),
+      val: gm.get('gpp-rsColorMethod', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Schema'),
@@ -1242,19 +1262,19 @@
     rsColorSchema: {
       name: __('Schema'),
       groupLv3: groupLv3.rsColor,
-      val: gm.get('gpp-rsColorSchema', '40,130,255'),
+      val: gm.get('gpp-rsColorSchema', '255,255,255'),
       html: function() {
         return cfgWidget.colorpicker(this.id, this.val);
       },
       rely: 'rsColorMethod',
       disabled: function() {
-        return setting[this.rely].val != 1;
+        return setting[this.rely].val != '1';
       }
     },
     rsColorEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.rsColor,
-      val: gm.get('gpp-rsColorEffect', '3'),
+      val: gm.get('gpp-rsColorEffect', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Normal'),
@@ -1266,7 +1286,7 @@
     rsImageStyle: {
       name: __('style'),
       groupLv3: groupLv3.rsImage,
-      val: gm.get('gpp-imageStyle', '2'),
+      val: gm.get('gpp-rsImageStyle', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Default'),
@@ -1277,7 +1297,7 @@
     backgroundColor: {
       name: __('Color'),
       groupLv3: groupLv3.background,
-      val: gm.get('gpp-backgroundColor', '50,50,50'),
+      val: gm.get('gpp-backgroundColor', '255,255,255'),
       html: function() {
         return cfgWidget.colorpicker(this.id, this.val);
       }
@@ -1285,7 +1305,7 @@
     backgroundEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.background,
-      val: gm.get('gpp-backgroundEffect', '2'),
+      val: gm.get('gpp-backgroundEffect', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Normal'),
@@ -1296,7 +1316,7 @@
     fontColorSchema: {
       name: __('Color'),
       groupLv3: groupLv3.font,
-      val: gm.get('gpp-fontColorSchema', '2'),
+      val: gm.get('gpp-fontColorSchema', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('Default'),
@@ -1315,7 +1335,7 @@
     sponsoredLinks: {
       name: __('Sponsored links'),
       groupLv3: groupLv3.adCleaner,
-      val: gm.get('gpp-sponsoredLinks', 1),
+      val: gm.get('gpp-sponsoredLinks', '0'),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
@@ -1323,7 +1343,7 @@
     favicon: {
       name: __('Favicon'),
       groupLv3: groupLv3.imageRs,
-      val: gm.get('gpp-favicon', 1),
+      val: gm.get('gpp-favicon', '0'),
       html: function() {
         return cfgWidget.switch(this.id, this.val);
       }
@@ -1331,7 +1351,7 @@
     preview: {
       name: __('Preview'),
       groupLv3: groupLv3.imageRs,
-      val: gm.get('gpp-preview', '2'),
+      val: gm.get('gpp-preview', '1'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, {
           '1': __('None'),
@@ -1438,11 +1458,18 @@
   
   // go coms
   var com = {
-    // go cols
+    // go com.cols
     cols: {
       run: function() {
-        var cnt = setting.colsNb.val;
-        if (cnt == 1) return;
+        var cnt = parseInt(setting.colsNb.val);
+        if (cnt === 1) return;
+
+        this.addCss();
+
+        if (setting.colsOrder.val == 2) { // top-to-bottom
+          return ;
+        }
+        // left-to-right
         var containers = $('.gpp-container');
         var cols = this;
         containers.each(function(i, dom) {
@@ -1464,56 +1491,59 @@
         }
         return this.table;
       },
-      handleResults: function(res, cnt) {
-        var rs = $('#ires > ol > li');
-        var order = setting.colsOrder.val; 
-        var table = this.getTable();
-        if (order == 1) { // left2right
-          var colsNum = 1, curTr;
-          rs.each(function(i, dom) {
-            var li = $(dom);
-            if (li.hasClass('gpp-rs')) {
-              if (colsNum === 1) {
-                curTr = $('<tr>').appendTo(table);
-              }
-              $('<td>').html(li.html()).appendTo(curTr).addClass('gpp-rs');
-              li.removeClass('gpp-rs');
-              if (colsNum === cnt) {
-                colsNum = 1;
-              } else {
-                colsNum++;
-              }
-            } else {
-              $('<tr>').append(
-                $('<td>').attr({'colspan': cnt}).html(li.html())
-              ).appendTo(table).addClass('gpp-tip');
-              li.removeClass('gpp-tip');
-              colsNum = 1;
-            }
-          });
-          var ires = $('#ires');
-          table.insertBefore(ires);
-          ires.addClass('gpp-hidden');
-          if (!this.addCss) {
-            gm.css('.gpp-rs {\
-              vertical-align: top;\
-            }\
-            #res {\
-              padding: 0;\
-            }\
-            #res > *:first-child {\
-              margin-top: 0;\
-            }\
-            table.gpp-cols {\
-              margin: -15px -7px;\
-            }');
-            this.addCss = true;
-          }
-        } else if (order == 2) { // top2bottom
+      addCss: function() {
+        var cnt = parseInt(setting.colsNb.val);
+        if (setting.colsOrder.val == 2) { // top-to-bottom
           gm.css('#ires > ol {\
             -moz-column-count: ' + cnt + '\
           }');
+        } else {
+          gm.css('.gpp-rs {\
+            vertical-align: top;\
+          }\
+          #res {\
+            padding: 0;\
+          }\
+          #res > *:first-child {\
+            margin-top: 0;\
+          }\
+          table.gpp-cols {\
+            margin: -15px -7px;\
+          }\
+          .gpp-rs ul {\
+            list-style: none;\
+          }');
         }
+      },
+      handleResults: function(res, cnt) { // only for left-to-right
+        var rs = $('#ires > ol > li');
+        var table = this.getTable();
+
+        var colsNum = 1, curTr;
+        rs.each(function(i, dom) {
+          var li = $(dom);
+          if (li.hasClass('gpp-rs')) {
+            if (colsNum === 1) {
+              curTr = $('<tr>').appendTo(table);
+            }
+            $('<td>').html(li.html()).appendTo(curTr).addClass('gpp-rs');
+            li.removeClass('gpp-rs');
+            if (colsNum === cnt) {
+              colsNum = 1;
+            } else {
+              colsNum++;
+            }
+          } else {
+            $('<tr>').append(
+              $('<td>').attr({'colspan': cnt}).html(li.html())
+            ).appendTo(table).addClass('gpp-tip');
+            li.removeClass('gpp-tip');
+            colsNum = 1;
+          }
+        });
+        var ires = $('#ires');
+        table.insertBefore(ires);
+        ires.addClass('gpp-hidden');
       }
     },
     background: {
@@ -1706,8 +1736,8 @@
       run: function() {
         var css = '';
         var rscss = '';
-        var strength = setting.rsShadow.val;
-        if (strength) {
+        var strength = parseInt(setting.rsShadow.val);
+        if (strength > 0) {
           rscss += '-moz-box-shadow: 0 1px ' + strength + 'px #000;';
         }
         var radius = setting.rsRadius.val;
@@ -1840,52 +1870,53 @@
         gm.css('#tads {display: none}');
       }
     },
+    // go com.addImages, go com.favicon, go com.preview
     addImages: {
+      addCss: function() {
+        var css = '';
+        if (this.favicon) {
+          css += 'img.gpp-favicon {\
+            width: 16px;\
+            height: 16px;\
+            margin: 0 4px 0 0;\
+            position: relative;\
+            top: 3px\
+          }';
+        }
+        if (this.preview != 1) {
+          css += 'a.gpp-preview {\
+            display: block;\
+            float: left;\
+            margin: 2px 8px 2px 0;\
+            text-align: center;' + (function(prev) {
+              if (prev == 2) {
+                return 'width: 111px; height: 82px; line-height: 82px;'
+              } else if (prev == 3) {
+                return 'width: 120px; height: 90px; line-height: 90px;'
+              }
+            })(this.preview) +
+          '}\
+          .gpp-rs:after {\
+            content: " ";\
+            display: block;\
+            clear: both;\
+            height: 1px;\
+          }';
+        }
+        css && gm.css(css);
+      },
       run: function() {
-        this.favicon = !!setting.favicon.val;
+        this.favicon = setting.favicon.val;
         this.preview = setting.preview.val;
         if (!this.favicon && this.preview == 1) return ;
-        if (!this.addedCss) {
-          var css = '';
-          if (this.favicon) {
-            css += 'img.gpp-favicon {\
-              width: 16px;\
-              height: 16px;\
-              margin: 0 4px 0 0;\
-              position: relative;\
-              top: 3px\
-            }';
-          }
-          if (this.preview != 1) {
-            css += 'a.gpp-preview {\
-              display: block;\
-              float: left;\
-              margin: 2px 8px 2px 0;\
-              text-align: center;' + (function(prev) {
-                if (prev == 2) {
-                  return 'width: 111px; height: 82px; line-height: 82px;'
-                } else if (prev == 3) {
-                  return 'width: 120px; height: 90px; line-height: 90px;'
-                }
-              })(this.preview) +
-            '}\
-            .gpp-rs:after {\
-              content: " ";\
-              display: block;\
-              clear: both;\
-              height: 1px;\
-            }';
-          }
-          css && gm.css(css);
-          this.addedCss = true;
-        }
+        this.addCss();
         var self = this;
         $('.gpp-rs .r > a').each(function(i, dom) {
           var a = $(dom);
           var protocol = a.attr('protocol');
           var host = a.attr('hostname');
           var domain = protocol + '//' + host;
-          if (self.favicon) {
+          if (self.favicon == 1) {
             $('<img>').bind('error', function() {
               var self = $(this);
               self.attr({
@@ -1987,20 +2018,131 @@
     },
     // go isFirstRun
     isFirstRun: (function() {
-      return false;
+      return !gm.get('gpp-runned');
     })(),
     // go firstRun
     firstRun: function() {
-      
+      gm.set('gpp-runned', true);
+      gm.css('#gpp-firstrun-panel {\
+        background: #fff;\
+        -moz-box-shadow: 0 5px 10px #111;\
+        width: 400px;\
+        height: 340px;\
+        text-align: center;\
+        padding: 10px;\
+      }\
+      #gpp-firstrun-panel ul {\
+        width: 250px;\
+        margin: 20px auto;\
+        list-style: none;\
+      }\
+      .gpp-quickConfig {\
+        margin: 10px auto;\
+        line-height: 22px;\
+        background: #16d;\
+        background: -moz-linear-gradient(top, #16f, #069);\
+      }\
+      .gpp-quickConfig:hover {\
+        background: #19f;\
+        background: -moz-linear-gradient(top, #27f, #09a);\
+      }\
+      .gpp-quickConfig:active {\
+        background: #16d;\
+        background: -moz-linear-gradient(top, #16f, #069);\
+      }');
+      var panel = $('<div>').addClass('gpp-shadowBox').attr({id: 'gpp-firstrun-panel'});
+      $('<h4>').html(__('Hello, it seems you are the first time to use Google++'))
+        .appendTo(panel);
+      $('<p>').html(__('To use this script, you can click the "G++" button at the top of the page to config by yourself.'))
+        .appendTo(panel);
+      $('<p>').html(__('Or click one of the options below for a quick config'))
+        .appendTo(panel);
+      // only run in firstrun functions
+      var closeThisPanel = function() {
+        shadow.hide();
+        panel.addClass('gpp-hidden');
+      };
+      var applySettings = function(config) {
+        for (var key in config) {
+          gm.set('gpp-' + key, config[key]);
+        }
+        location.reload();
+      };
+      // buttons, options
+      var options = $('<ul>');
+      $('<li>').addClass('gpp-quickConfig gpp-btn').html(__("Simple and clean"))
+        .appendTo(options).bind('click', function() {
+          closeThisPanel();
+          applySettings({
+            autoHideLeftSidebar: '1',
+            autoHideRightSidebar: '1',
+            sponsoredLinks: '1',
+            favicon: '1',
+            preview: '2'
+          });
+        });
+      $('<li>').addClass('gpp-quickConfig gpp-btn').html(__("Classic G++"))
+        .appendTo(options).bind('click', function() {
+          closeThisPanel();
+          applySettings({
+            autoHideLeftSidebar: '1',
+            autoHideRightSidebar: '1',
+            sponsoredLinks: '1',
+            favicon: '1',
+            preview: '2',
+            colsNb: '2',
+            colsOrder: '1',
+            rsShadow: '3',
+            rsRadius: '10',
+            rsColorMethod: '2'
+          });
+        });
+      $('<li>').addClass('gpp-quickConfig gpp-btn').html(__("Full featured"))
+        .appendTo(options).bind('click', function() {
+          closeThisPanel();
+          applySettings({
+            autoHideLeftSidebar: '1',
+            autoHideRightSidebar: '1',
+            sponsoredLinks: '1',
+            favicon: '1',
+            preview: '2',
+            colsNb: '2',
+            colsOrder: '2',
+            rsShadow: '5',
+            rsRadius: '10',
+            rsColorMethod: '3',
+            fixedSearchbar: '1',
+            rsFontSize: -1,
+            rsFontEffect: '2',
+            rsColorEffect: '3',
+            rsImageStyle: '2',
+            backgroundColor: '80,80,80',
+            backgroundEffect: '2',
+            fontColorSchema: '2',
+          });
+        });
+      $('<li>').addClass('gpp-quickConfig gpp-btn').html(__("No pre-config, I'll do it myself"))
+        .appendTo(options).bind('click', function() {
+          closeThisPanel();
+          cfg.show();
+        });
+      options.appendTo(panel);
+      // options end, show tip
+      $('<p>').html(__('Always remember that you can config almost every single detail by clicking the G++ button at the top of the page'))
+        .appendTo(panel);
+
+      panel.appendTo($('body'));
+      shadow.setBox(panel).click(function() {
+        closeThisPanel();
+      }).show();
     },
     // go run 
     run: function() {
+      this.initEnv();
+      this.initCfg();
+      this.exec();
       if (this.isFirstRun) {
         this.firstRun();
-      } else {
-        this.initEnv();
-        this.initCfg();
-        this.exec();
       }
     }
   };
