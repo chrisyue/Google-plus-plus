@@ -374,13 +374,19 @@
       gm.css('.gpp-shadowBox {\
         position: fixed;\
         z-index: 200;\
+      }\
+      #gpp-cfg-shadow {\
+        background: #fff;\
+        opacity: .6;\
+        position: fixed;\
+        z-index: 100;\
+        top: 0px;\
+        left: 0px;\
+        width: ' + screen.availWidth + 'px;\
+        height: ' + screen.availHeight + 'px;\
       }');
     },
     show: function() {
-      if (!this.addedCss) {
-        this.addCss();
-        this.addedCss = true;
-      }
       this.getInst().removeClass('gpp-hidden');
       this.centerBox();
       return this;
@@ -393,17 +399,8 @@
       }
       return this;
     },
-    createShadow: function() {
-      gm.css('#gpp-cfg-shadow {\
-        background: #fff;\
-        opacity: .6;\
-        position: fixed;\
-        z-index: 100;\
-        top: 0px;\
-        left: 0px;\
-        width: ' + screen.availWidth + 'px;\
-        height: ' + screen.availHeight + 'px;\
-      }');
+    createShadow: function() { // this will only run once
+      this.addCss();
       return $('<div>').attr({'id': 'gpp-cfg-shadow'}).appendTo('body');
     },
     click: function(callback) { // go shadow.click
@@ -1956,7 +1953,6 @@
             }, false).bind('error', function() {
               loadImg.remove();
               prevLink.html(__('No preview'));
-              gm.log(this.src);
             }, false).attr({
               'alt': '',
               'src': src
