@@ -435,50 +435,52 @@
   // go cfgWidget
   var cfgWidget = {
     // go cfgWidget.number
-    addNbCss: false,
+    addNbCss: function() {
+      gm.css('.gpp-cfg-minus, .gpp-cfg-screen, .gpp-cfg-plus {\
+        float: left;\
+        text-align: center;\
+      }\
+      .gpp-cfg-minus, .gpp-cfg-plus {\
+        padding: 0 10px;\
+        background: -moz-linear-gradient(top, #555, #111);\
+        color: #fff;\
+        text-shadow: 0 -1px 0 #000;\
+        cursor: pointer;\
+        position: relative;\
+        top: -1px;\
+      }\
+      .gpp-cfg-minus:hover, .gpp-cfg-plus:hover {\
+        background: -moz-linear-gradient(top, #f70, #a40);\
+        text-shadow: 0 0 2px #fff;\
+      }\
+      .gpp-cfg-minus:active, .gpp-cfg-plus:active {\
+        background: -moz-linear-gradient(top, #555, #111);\
+        text-shadow: 0 -1px 0 #000;\
+        top: 0px;\
+      }\
+      .gpp-cfg-screen {\
+        width: 40px;\
+        background: -moz-linear-gradient(top, #fff, #eee 40%, #ccc 40%, #ddd);\
+        position: relative;\
+        top: -1px;\
+      }\
+      .gpp-cfg-minus {\
+        -moz-border-radius: 10px 0 0 10px;\
+      }\
+      .gpp-cfg-plus {\
+        -moz-border-radius: 0 10px 10px 0;\
+      }\
+      .gpp-cfg-numberTuner {\
+        float: left;\
+        -moz-border-radius: 10px;\
+        -moz-box-shadow: 0 0 4px #000;\
+        background: #333;\
+      }');
+    },
     number: function(id, val, min, max) {
-      if (!this.addNbCss) {
-        gm.css('.gpp-cfg-minus, .gpp-cfg-screen, .gpp-cfg-plus {\
-          float: left;\
-          text-align: center;\
-        }\
-        .gpp-cfg-minus, .gpp-cfg-plus {\
-          padding: 0 10px;\
-          background: -moz-linear-gradient(top, #555, #111);\
-          color: #fff;\
-          text-shadow: 0 -1px 0 #000;\
-          cursor: pointer;\
-          position: relative;\
-          top: -1px;\
-        }\
-        .gpp-cfg-minus:hover, .gpp-cfg-plus:hover {\
-          background: -moz-linear-gradient(top, #f70, #a40);\
-          text-shadow: 0 0 2px #fff;\
-        }\
-        .gpp-cfg-minus:active, .gpp-cfg-plus:active {\
-          background: -moz-linear-gradient(top, #555, #111);\
-          text-shadow: 0 -1px 0 #000;\
-          top: 0px;\
-        }\
-        .gpp-cfg-screen {\
-          width: 40px;\
-          background: -moz-linear-gradient(top, #fff, #eee 40%, #ccc 40%, #ddd);\
-          position: relative;\
-          top: -1px;\
-        }\
-        .gpp-cfg-minus {\
-          -moz-border-radius: 10px 0 0 10px;\
-        }\
-        .gpp-cfg-plus {\
-          -moz-border-radius: 0 10px 10px 0;\
-        }\
-        .gpp-cfg-numberTuner {\
-          float: left;\
-          -moz-border-radius: 10px;\
-          -moz-box-shadow: 0 0 4px #000;\
-          background: #333;\
-        }');
-        this.addClass = true;
+      if (!this.addedNbCss) {
+        this.addNbCss();
+        this.addedNbCss = true;
       }
       if (typeof min !== 'number') min = 1;
       if (typeof max !== 'number') max = 999;
@@ -518,50 +520,52 @@
       return container;
     },
     // go cfgWidget.choice
-    addChoicesCss: false,
+    addChoicesCss: function() {
+      gm.css('.gpp-cfg-choiceContainer {\
+        float: left;\
+        -moz-border-radius: 10px;\
+        -moz-box-shadow: 0 1px 2px #000;\
+        background: #999;\
+      }\
+      .gpp-cfg-choiceContainer div {\
+        float: left;\
+        padding: 0px 8px;\
+        cursor: pointer;\
+        margin: 0 1px 0 0;\
+        color: #fff;\
+        text-shadow: 0 -1px 0 #000;\
+        background: -moz-linear-gradient(top, #555, #111);\
+      }\
+      .gpp-cfg-choiceContainer div:first-child {\
+        -moz-border-radius: 10px 0 0 10px;\
+        margin-left: 0;\
+      }\
+      .gpp-cfg-choiceContainer div:last-child {\
+        -moz-border-radius: 0 10px 10px 0;\
+        margin-right: 0;\
+      }\
+      .gpp-cfg-choiceContainer div.gpp-cfg-selected {\
+        text-shadow: 0 0 2px #fff;\
+        background: -moz-linear-gradient(top, #55f, #369);\
+        -moz-box-shadow: 0 0 2px #55f;\
+      }\
+      .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):hover {\
+        text-shadow: 0 0 2px #fff;\
+        background: -moz-linear-gradient(top, #f70, #a40);\
+        -moz-box-shadow: 0 0 2px #f70;\
+      }\
+      .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):active {\
+        text-shadow: 0 -1px 0 #000;\
+        background: -moz-linear-gradient(top, #555, #111);\
+        position: relative;\
+        top: 1px;\
+        -moz-box-shadow: 0 0 0 #000;\
+      }');
+    },
     choices: function(id, val, choices) {
-      if (!this.addChoicesCss) {
-        gm.css('.gpp-cfg-choiceContainer {\
-          float: left;\
-          -moz-border-radius: 10px;\
-          -moz-box-shadow: 0 1px 2px #000;\
-          background: #999;\
-        }\
-        .gpp-cfg-choiceContainer div {\
-          float: left;\
-          padding: 0px 8px;\
-          cursor: pointer;\
-          margin: 0 1px 0 0;\
-          color: #fff;\
-          text-shadow: 0 -1px 0 #000;\
-          background: -moz-linear-gradient(top, #555, #111);\
-        }\
-        .gpp-cfg-choiceContainer div:first-child {\
-          -moz-border-radius: 10px 0 0 10px;\
-          margin-left: 0;\
-        }\
-        .gpp-cfg-choiceContainer div:last-child {\
-          -moz-border-radius: 0 10px 10px 0;\
-          margin-right: 0;\
-        }\
-        .gpp-cfg-choiceContainer div.gpp-cfg-selected {\
-          text-shadow: 0 0 2px #fff;\
-          background: -moz-linear-gradient(top, #55f, #369);\
-          -moz-box-shadow: 0 0 2px #55f;\
-        }\
-        .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):hover {\
-          text-shadow: 0 0 2px #fff;\
-          background: -moz-linear-gradient(top, #f70, #a40);\
-          -moz-box-shadow: 0 0 2px #f70;\
-        }\
-        .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):active {\
-          text-shadow: 0 -1px 0 #000;\
-          background: -moz-linear-gradient(top, #555, #111);\
-          position: relative;\
-          top: 1px;\
-          -moz-box-shadow: 0 0 0 #000;\
-        }');
-        this.addChoicesCss = true;
+      if (!this.addedChoicesCss) {
+        this.addChoicesCss();
+        this.addedChoicesCss = true;
       }
       var container = $('<div>').addClass('gpp-cfg-choiceContainer')
         .attr({'id': 'gpp-' + id}); // add this to make disable work
@@ -728,7 +732,7 @@
   // go configuration
   var cfg = {
     // go cfg.btn 
-    btn: (function() {
+    btn: (function() { // must run, so .. run at once and only once
       var btn = $('<div>').attr({
         'id': 'gpp-cfg-cfgBtn'
       }).addClass('gpp-btn').html('G++').bind('click', function() {
@@ -896,128 +900,132 @@
         }
       }
     },
+    // go cfg.addCfgCss
+    addCfgCss: function() {
+      gm.css('#gpp-cfg-content {\
+        width: 560px;\
+        background: #fff;\
+        -moz-box-shadow: 0 5px 10px #111;\
+        font-family: Tahoma, Helvetica, Arial, Sans-serif;\
+        margin: 0;\
+        color: #222;\
+      }\
+      #gpp-cfg-content dt {\
+        font-size: 16px;\
+        letter-spacing: 3px;\
+        padding: 5px 10px;\
+        background: -moz-linear-gradient(top, #48c, #246);\
+      }\
+      #gpp-cfg-content dt:hover {\
+        background: -moz-linear-gradient(top, #5af, #369);\
+      }\
+      #gpp-cfg-content dt:active {\
+        background: -moz-linear-gradient(top, #369, #123);\
+      }\
+      #gpp-cfg-content dt.gpp-cfg-currentTab {\
+        text-shadow: 0 0 2px #fff;\
+      }\
+      #gpp-cfg-content dd {\
+        font-size: 15px;\
+        margin: 0;\
+        padding: 5px 10px;\
+        height: 260px;\
+        background: -moz-linear-gradient(top, #999, #fff 5%, #def);\
+      }\
+      #gpp-cfg-content dt:not(.gpp-cfg-currentTab) + dd {\
+        display: none;\
+      }\
+      #gpp-cfg-btnContainer {\
+        position: fixed;\
+        z-index: 150;\
+        background: #fff;\
+        -moz-border-radius: 12px 12px 0 0;\
+        -moz-box-shadow: 0 5px 10px #333;\
+        padding: 0 10px;\
+      }\
+      #gpp-cfg-btnContainer div {\
+        text-align: center;\
+        float: left;\
+        margin: 5px;\
+        width: 60px;\
+      }\
+      #gpp-cfg-okBtn {\
+        background: -moz-linear-gradient(top, #393, #131);\
+      }\
+      #gpp-cfg-cancelBtn {\
+        background: -moz-linear-gradient(top, #933, #311);\
+      }\
+      #gpp-cfg-okBtn:hover {\
+        background: -moz-linear-gradient(top, #2e2, #292);\
+      }\
+      #gpp-cfg-cancelBtn:hover {\
+        background: -moz-linear-gradient(top, #e22, #922);\
+      }\
+      #gpp-cfg-okBtn:active {\
+        background: -moz-linear-gradient(top, #393, #131);\
+      }\
+      #gpp-cfg-cancelBtn:active {\
+        background: -moz-linear-gradient(top, #933, #311);\
+      }\
+      #gpp-cfg-content dd > p {\
+        margin: 0;\
+        float: left;\
+        width: 100%;\
+        line-height: 20px;\
+      }\
+      #gpp-cfg-content ul {\
+        list-style: none;\
+        width: 150px;\
+        float: left;\
+      }\
+      #gpp-cfg-content li {\
+        margin: 10px 10px 10px 5px;\
+        background: -moz-linear-gradient(top, #369, #123);\
+      }\
+      #gpp-cfg-content li.gpp-cfg-currentSubTab, #gpp-cfg-content li:hover {\
+        background: -moz-linear-gradient(top, #55f, #369);\
+        text-shadow: 0 0 2px #fff;\
+      }\
+      #gpp-cfg-content li:active {\
+        background: -moz-linear-gradient(top, #369, #123);\
+        text-shadow: 0 -1px 0 #000;\
+      }\
+      .gpp-cfg-tableContainer {\
+        float: left;\
+        padding: 6px 0;\
+        height: 220px;\
+        overflow-y: scroll;\
+      }\
+      .gpp-cfg-tableContainer table {\
+        border-left: 1px solid #aaa;\
+      }\
+      #gpp-cfg-content th, #gpp-cfg-content td {\
+        padding: 2px 6px;\
+        line-height: 18px;\
+        font-size: 13px;\
+        text-align: left;\
+      }\
+      #gpp-cfg-content th {\
+        background: #acf;\
+      }\
+      #gpp-cfg-content td:first-child {\
+        background: #def;\
+      }\
+      #gpp-cfg-content td:last-child {\
+        background: #eee;\
+      }\
+      .gpp-cfg-disabled {\
+        opacity: .5;\
+      }');
+    },
     // go cfg.show
     show: function() {
-      if (!this.content && !this.btnContainer) {
+      if (!this.showed) {
         this.initData();
+        this.addCfgCss();
         this.content      = this.createContent().appendTo('body');
         this.btnContainer = this.createBtnContainer().appendTo('body');
-        // go css cfg
-        gm.css('#gpp-cfg-content {\
-          width: 560px;\
-          background: #fff;\
-          -moz-box-shadow: 0 5px 10px #111;\
-          font-family: Tahoma, Helvetica, Arial, Sans-serif;\
-          margin: 0;\
-          color: #222;\
-        }\
-        #gpp-cfg-content dt {\
-          font-size: 16px;\
-          letter-spacing: 3px;\
-          padding: 5px 10px;\
-          background: -moz-linear-gradient(top, #48c, #246);\
-        }\
-        #gpp-cfg-content dt:hover {\
-          background: -moz-linear-gradient(top, #5af, #369);\
-        }\
-        #gpp-cfg-content dt:active {\
-          background: -moz-linear-gradient(top, #369, #123);\
-        }\
-        #gpp-cfg-content dt.gpp-cfg-currentTab {\
-          text-shadow: 0 0 2px #fff;\
-        }\
-        #gpp-cfg-content dd {\
-          font-size: 15px;\
-          margin: 0;\
-          padding: 5px 10px;\
-          height: 260px;\
-          background: -moz-linear-gradient(top, #999, #fff 5%, #def);\
-        }\
-        #gpp-cfg-content dt:not(.gpp-cfg-currentTab) + dd {\
-          display: none;\
-        }\
-        #gpp-cfg-btnContainer {\
-          position: fixed;\
-          z-index: 150;\
-          background: #fff;\
-          -moz-border-radius: 12px 12px 0 0;\
-          -moz-box-shadow: 0 5px 10px #333;\
-          padding: 0 10px;\
-        }\
-        #gpp-cfg-btnContainer div {\
-          text-align: center;\
-          float: left;\
-          margin: 5px;\
-          width: 60px;\
-        }\
-        #gpp-cfg-okBtn {\
-          background: -moz-linear-gradient(top, #393, #131);\
-        }\
-        #gpp-cfg-cancelBtn {\
-          background: -moz-linear-gradient(top, #933, #311);\
-        }\
-        #gpp-cfg-okBtn:hover {\
-          background: -moz-linear-gradient(top, #2e2, #292);\
-        }\
-        #gpp-cfg-cancelBtn:hover {\
-          background: -moz-linear-gradient(top, #e22, #922);\
-        }\
-        #gpp-cfg-okBtn:active {\
-          background: -moz-linear-gradient(top, #393, #131);\
-        }\
-        #gpp-cfg-cancelBtn:active {\
-          background: -moz-linear-gradient(top, #933, #311);\
-        }\
-        #gpp-cfg-content dd > p {\
-          margin: 0;\
-          float: left;\
-          width: 100%;\
-          line-height: 20px;\
-        }\
-        #gpp-cfg-content ul {\
-          list-style: none;\
-          width: 150px;\
-          float: left;\
-        }\
-        #gpp-cfg-content li {\
-          margin: 10px 10px 10px 5px;\
-          background: -moz-linear-gradient(top, #369, #123);\
-        }\
-        #gpp-cfg-content li.gpp-cfg-currentSubTab, #gpp-cfg-content li:hover {\
-          background: -moz-linear-gradient(top, #55f, #369);\
-          text-shadow: 0 0 2px #fff;\
-        }\
-        #gpp-cfg-content li:active {\
-          background: -moz-linear-gradient(top, #369, #123);\
-          text-shadow: 0 -1px 0 #000;\
-        }\
-        .gpp-cfg-tableContainer {\
-          float: left;\
-          padding: 6px 0;\
-          height: 220px;\
-          overflow-y: scroll;\
-        }\
-        .gpp-cfg-tableContainer table {\
-          border-left: 1px solid #aaa;\
-        }\
-        #gpp-cfg-content th, #gpp-cfg-content td {\
-          padding: 2px 6px;\
-          line-height: 18px;\
-          font-size: 13px;\
-          text-align: left;\
-        }\
-        #gpp-cfg-content th {\
-          background: #acf;\
-        }\
-        #gpp-cfg-content td:first-child {\
-          background: #def;\
-        }\
-        #gpp-cfg-content td:last-child {\
-          background: #eee;\
-        }\
-        .gpp-cfg-disabled {\
-          opacity: .5;\
-        }');
+        this.showed = true;
       } else {
         this.content.removeClass('gpp-hidden');
         this.btnContainer.removeClass('gpp-hidden');
@@ -1160,15 +1168,15 @@
       groupLv3: groupLv3.cols,
       val: gm.get('gpp-colsNb', '1'),
       html: function() { 
-        // i'd like it to be a fn 'cause it shouldn't run at start
-        // and if it's not a fn, 'this.val' is undefined
+        // i'd like it to be a function because it shouldn't run at start
+        // and if it's not a function, 'this.val' is undefined
         return cfgWidget.number(this.id, this.val, 1);
       }
     },
     colsOrder: {
       name: __('Order'),
       groupLv3: groupLv3.cols,
-      val: gm.get('gpp-colsOrder', '2'), // 1: left2right 2: top2bottom
+      val: gm.get('gpp-colsOrder', '2'),
       html: function() {
         return cfgWidget.choices(this.id, this.val, 
           {'1': __('Left to right'), '2':__('Top to bottom')}
@@ -1179,7 +1187,7 @@
         return setting[this.rely].val == '1';
       }
     },
-    // go left sidebar setting
+    // go setting.autoHideLeftSidebar
     autoHideLeftSidebar: {
       name: __('Auto hide'),
       groupLv3: groupLv3.leftSidebar,
@@ -1188,7 +1196,7 @@
         return cfgWidget.switch(this.id, this.val);
       }
     },
-    // go right sidebar setting
+    // go setting.autoHideRightSidebar
     autoHideRightSidebar: {
       name: __('Auto hide'),
       groupLv3: groupLv3.rightSidebar,
@@ -1197,7 +1205,7 @@
         return cfgWidget.switch(this.id, this.val);
       }
     },
-    // go searchbar setting
+    // go setting.fixedSearchbar
     fixedSearchbar: {
       name: __('Fixed on top'),
       groupLv3: groupLv3.searchbar,
@@ -1206,7 +1214,7 @@
         return cfgWidget.switch(this.id, this.val);
       }
     },
-    // go rs style setting
+    // go setting.rsShadow
     rsShadow: {
       name: __('Shadow'),
       groupLv3: groupLv3.rsBorder,
@@ -1215,6 +1223,7 @@
         return cfgWidget.number(this.id, this.val, 0);
       }
     },
+    // go setting.rsRadius
     rsRadius: {
       name: __('Radius'),
       groupLv3: groupLv3.rsBorder,
@@ -1223,6 +1232,7 @@
         return cfgWidget.number(this.id, this.val, 0);
       }
     },
+    // go setting.rsFontSize
     rsFontSize: {
       name: __('Size'),
       groupLv3: groupLv3.rsFont,
@@ -1231,6 +1241,7 @@
         return cfgWidget.number(this.id, this.val, -5);
       }
     },
+    // go setting.rsFontEffect
     rsFontEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.rsFont,
@@ -1244,6 +1255,7 @@
         });
       }
     },
+    // go setting.rsColorMethod
     rsColorMethod: {
       name: __('Method'),
       groupLv3: groupLv3.rsColor,
@@ -1256,6 +1268,7 @@
         });
       }
     },
+    // go setting.rsColorSchema
     rsColorSchema: {
       name: __('Schema'),
       groupLv3: groupLv3.rsColor,
@@ -1268,6 +1281,7 @@
         return setting[this.rely].val != '1';
       }
     },
+    // go setting.rsColorEffect
     rsColorEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.rsColor,
@@ -1280,6 +1294,7 @@
         });
       }
     },
+    // go setting.rsImageStyle
     rsImageStyle: {
       name: __('style'),
       groupLv3: groupLv3.rsImage,
@@ -1291,6 +1306,7 @@
         });
       }
     },
+    // go setting.backgroundColor
     backgroundColor: {
       name: __('Color'),
       groupLv3: groupLv3.background,
@@ -1299,6 +1315,7 @@
         return cfgWidget.colorpicker(this.id, this.val);
       }
     },
+    // go setting.backgroundEffect
     backgroundEffect: {
       name: __('Effect'),
       groupLv3: groupLv3.background,
@@ -1310,6 +1327,7 @@
         });
       }
     },
+    // go setting.fontColorSchema
     fontColorSchema: {
       name: __('Color'),
       groupLv3: groupLv3.font,
@@ -1321,6 +1339,7 @@
         });
       }
     },
+    // go setting.css
     css: {
       name: __('CSS'),
       groupLv3: groupLv3.userstyle,
@@ -1329,6 +1348,7 @@
         return cfgWidget.text(this.id, this.val);
       }
     },
+    // go setting.sponsoredLinks
     sponsoredLinks: {
       name: __('Sponsored links'),
       groupLv3: groupLv3.adCleaner,
@@ -1337,6 +1357,7 @@
         return cfgWidget.switch(this.id, this.val);
       }
     },
+    // go setting.favicon
     favicon: {
       name: __('Favicon'),
       groupLv3: groupLv3.imageRs,
@@ -1345,6 +1366,7 @@
         return cfgWidget.switch(this.id, this.val);
       }
     },
+    // go setting.preview
     preview: {
       name: __('Preview'),
       groupLv3: groupLv3.imageRs,
@@ -1361,7 +1383,7 @@
 
   // go resource
   var resource = {
-    //
+    // loading image
     loadingImage: "data:image/gif;base64,R0lGODlhIgAiAPQAADk5OVJSUlpaWmtra3t7e4S\
       EhIyMjJSUlJycnKWlpa2trbW1tb29vcbGxs7OztbW1t7e3ufn5%2B%2Fv7%2Ff39%2F%2F%2F%\
       2FwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAgFAAAAIf8LTkVUU0NBUEUyL\
@@ -1441,7 +1463,7 @@
       AAAAAAAAAAAAAAAAAAAAAWM4CWOZGmeaKqurDCw8PkAVWyPgHGrRD06gF3qMKCMKgCEEHUgGEW\
       FwBKFKIoggMj0VJ2IArqpwktKDCQXiGLLSCQivkuCYNmSGu4FOm03QdoJZH0mFQ5ag4gnEg4OD\
       YyODQ%2BDFhKVlpaJmTAWFHGJFJaefRMSEROidqQRdZoXEqytsbKztLW2t7i5tCEAOw%3D%3D",
-    //
+    // firefox's default page favicon
     defaultFavicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAA\
       AAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAGfzAABthAAA+Q0AAIJ0AABohAA\
       A4nMAADdOAAAW+oNGCysAAAEuSURBVHjanJO9TsMwFIWPQ8SUOaIDajJEqniBLGUAnosNqerGx\
