@@ -1479,16 +1479,14 @@
   var com = {
     // go com.cols
     cols: {
+      enabled: +setting.colsNb.val > 1,
       run: function() {
-        var cnt = parseInt(setting.colsNb.val);
-        if (cnt === 1) return;
-
-        this.addCss();
-
-        if (setting.colsOrder.val == 2) { // top-to-bottom
-          return ;
+        // top-to-bottom
+        if (setting.colsOrder.val === '2') {
+          return ; // need only css
         }
         // left-to-right
+        var cnt = +setting.colsNb.val;
         var containers = $('.gpp-container');
         var cols = this;
         containers.each(function(i, dom) {
@@ -1511,10 +1509,9 @@
         return this.table;
       },
       addCss: function() {
-        var cnt = parseInt(setting.colsNb.val);
-        if (setting.colsOrder.val == 2) { // top-to-bottom
+        if (setting.colsOrder.val === '2') { // top-to-bottom
           gm.css('#ires > ol {\
-            -moz-column-count: ' + cnt + '\
+            -moz-column-count: ' + setting.colsNb.val + '\
           }');
         } else {
           gm.css('.gpp-rs {\
@@ -1565,13 +1562,16 @@
         ires.addClass('gpp-hidden');
       }
     },
+    // go com.background
     background: {
-      run: function() {
+      // always enable, default is white
+      enable: true,
+      addCss: function() {
         var eff = setting.backgroundEffect.val,
           color = setting.backgroundColor.val,
           bgcolor;
 
-        if (eff == 1) {
+        if (eff === '1') {
           bgcolor = 'rgb(' + color + ')';
         } else {
           colors = color.split(',');
@@ -1604,11 +1604,11 @@
         }');
       }
     },
-    // go font
-    font: {
-      run: function() {
-        var set = setting.fontColorSchema.val;
-        if (set == 1) return ;
+    // go com.fontColorSchema
+    fontColorSchema: {
+      enabled: setting.fontColorSchema.val !== '1',
+      addCss: function() {
+        // if default do nothing
         // else
         gm.css('body {\
           color: #ddd;\
@@ -1630,31 +1630,26 @@
         }\
         a.gb1:active, a.gb2:active, a.gb3:active, a.gb4:active {\
           color: #fff !important;\
-        }\
-        ');
+        }');
       }
     },
-    // go userstyle
+    // go com.userstyle
     userstyle: {
-      run: function() {
-        var css = setting.css.val;
-        if (css) {
-          gm.css(css);
-        }
+      enabled: !!setting.css.val,
+      addCss: function() {
+        gm.css(css);
       }
     },
-    // go autoHideLeftSidebar
+    // go com.autoHideLeftSidebar
     autoHideLeftSidebar: {
-      run: function() {
-        if (setting.autoHideLeftSidebar.val == '0') return ;
-        var background = setting.backgroundColor.val;
-        $('#cnt').removeAttr('style');
+      enabled: setting.autoHideLeftSidebar.val !== '0',
+      addCss: function() {
         gm.css('#leftnav {\
           width: 151px !important;\
           left: -142px;\
           -moz-box-shadow: 0 1px 5px #000;\
           -moz-border-radius: 0 10px 10px 0;\
-          background: rgba('+ background +', 0.9);\
+          background: rgba(' + setting.backgroundColor.val + ', 0.9);\
         }\
         #leftnav:hover {\
           left: 0px;\
@@ -1662,25 +1657,25 @@
         #center_col {\
           margin-left: 10px;\
         }');
+      },
+      run: function() {
+        $('#cnt').removeAttr('style');
       }
     },
-    // go autoHideRightSidebar
+    // go com.autoHideRightSidebar
     autoHideRightSidebar: {
-      run: function() {
-        if (setting.autoHideRightSidebar.val == '0') return ;
-        var background = setting.backgroundColor.val;
-        var rhs = $('#rhs');
+      enabled: setting.autoHideRightSidebar.val !== '0',
+      hasRhs: (function() {
+        return !!$('#rhs').size();
+      })(),
+      addCss: function() {
         var css = '#cnt {\
           max-width: none;\
         }\
         #center_col {\
           margin-right: 10px;\
         }';
-        if (rhs.size()) {
-          rhs.removeAttr('style');
-          var block = $('#rhs_block');
-          block.removeAttr('style');
-
+        if (this.hasRhs) {
           css += '#rhs {\
             width: 18px;\
             border: 0;\
@@ -1691,7 +1686,7 @@
           }\
           #rhs_block {\
             width: 264px;\
-            background: rgba(' + background + ', 0.9);\
+            background: rgba(' + setting.backgroundColor.val + ', 0.9);\
             -moz-box-shadow: 0 1px 5px #000;\
             -moz-border-radius: 10px 0 0 10px;\
             margin: 5px;\
@@ -1703,17 +1698,21 @@
           }';
         }
         gm.css(css);
+      },
+      run: function() {
+        if (this.hasRhs) {
+          $('#rhs').removeAttr('style');
+          $('#rhs_block').removeAttr('style');
+        }
       }
     },
-    // go fixedSearchbar
+    // go com.fixedSearchbar
     fixedSearchbar: {
-      run: function() {
-        if (setting.fixedSearchbar.val == '0') return ;
-        var background = setting.backgroundColor.val;
-        $('#sfcnt').removeAttr('style');
+      enabled: setting.fixedSearchbar.val !== '0',
+      addCss: function() {
         gm.css('#gog, #sfcnt, #subform_ctrl {\
           position: fixed;\
-          background: rgba(' + background + ', .9);\
+          background: rgba(' + setting.backgroundColor.val + ', .9);\
         }\
         #gog {\
           width: 100%;\
@@ -1748,58 +1747,107 @@
         body {\
           margin-top: 115px;\
         }');
+      },
+      run: function() {
+        $('#sfcnt').removeAttr('style');
+      }
+    },
+    // go com.rsShadow
+    rsShadow: {
+      enabled: +setting.rsShadow.val > 0,
+      addCss: function() {
+        gm.css('.gpp-rs {\
+          -moz-box-shadow: 0 1px ' + setting.rsShadow.val + 'px #000;\
+          padding: 5px 10px;\
+        }');
+      }
+    },
+    // go com.rsRadius
+    rsRadius: {
+      enabled: +setting.rsRadius.val > 0,
+      addCss: function() {
+        var radius = +setting.rsRadius.val;
+        var css = '-moz-border-radius: ' + radius + 'px;';
+        if (radius / 2 > 5) {
+          padd = Math.ceil(radius / 2);
+          css += 'padding: ' + padd + 'px ' + padd * 2 + 'px;';
+        }
+        gm.css('.gpp-rs {' + css + '}');
+      }
+    },
+    rsFontSize: {
+      // always run, default is title: 16, content: 13
+      enabled: true,
+      addCss: function() {
+        var content = 13,
+          title = 16,
+          add = +setting.rsFontSize.val;
+        // add
+        content += add; 
+        title += add;
+        gm.css('.gpp-rs * {\
+          font-size: ' + content + 'px\
+        }\
+        .gpp-rs .r * {\
+          font-size: ' + title + 'px;\
+        }');
+      }
+    },
+    rsFontEffect: {
+      enabled: setting.rsFontEffect.val,
+      addCss: function() {
+        var css = '', 
+          css2 = '', 
+          fontEffect = setting.rsFontEffect.val;
+        switch (fontEffect) {
+          case '2':
+            css += 'text-shadow: 0 -1px 0 #000;';
+            break;
+          case '3':
+            css += 'text-shadow: 1px 1px 1px #333;';
+            break;
+          case '4':
+            css += 'text-shadow: 0 0 1px #555;';
+            break;
+        }
+        if (fontEffect === '2') {
+          css += 'color: #ddd;';
+          css2 += '.gpp-rs a:link {\
+            color:#dd1;\
+          }\
+          .gpp-rs em {\
+            color:#f91;\
+          }\
+          .gpp-rs a:visited {\
+            color:#11c;\
+          }\
+          .gpp-rs cite {\
+            color:#0c0;\
+          }\
+          .gpp-rs a:active {\
+            color:#fff !important;\
+          }';
+        } else {
+          css += 'color: #222;';
+          css2 += '#gsr .gpp-rs a:link {\
+            color:#11c;\
+          }\
+          #gsr .gpp-rs em {\
+            color:#c11;\
+          }\
+          #gsr .gpp-rs a:visited {\
+            color:#a0b;\
+          }\
+          #gsr .gpp-rs a:active {\
+            color:#c11 !important;\
+          }';
+        }
+        gm.css('.gpp-rs {' + css + '}' + css2);
       }
     },
     // go rsStyle
     rsStyle: {
       run: function() {
-        var css = '';
-        var rscss = '';
-        var strength = parseInt(setting.rsShadow.val);
-        if (strength > 0) {
-          rscss += '-moz-box-shadow: 0 1px ' + strength + 'px #000;';
-        }
-        var radius = setting.rsRadius.val;
-        var padd = 5;
-        if (radius) {
-          if (radius / 2 > 5) {
-            padd = Math.ceil(radius / 2);
-          }
-          rscss += '-moz-border-radius: ' + radius + 'px;';
-        }
-        if (rscss) {
-          rscss += 'padding: ' + padd + 'px ' + padd * 2 + 'px;';
-        }
-        var content = 13, title = 16;
-        var add = parseInt(setting.rsFontSize.val);
-        content += add; title += add;
-        css += '.gpp-rs * { font-size: ' 
-          + content + 'px } .gpp-rs .r * { font-size: ' 
-          + title + 'px }';
-        var fontEffect = setting.rsFontEffect.val; 
-        switch (fontEffect) {
-          case '2':
-            rscss += 'text-shadow: 0 -1px 0 #000;';
-            break;
-          case '3':
-            rscss += 'text-shadow: 1px 1px 1px #333;';
-            break;
-          case '4':
-            rscss += 'text-shadow: 0 0 1px #555;';
-            break;
-          default:
-        }
-        if (fontEffect == 2) {
-          rscss += 'color: #ddd;';
-          css += '.gpp-rs a:link {color:#dd1} .gpp-rs em {color:#f91}\
-            .gpp-rs a:visited {color:#11c} .gpp-rs cite {color:#0c0}\
-            .gpp-rs a:active {color:#fff !important}';
-        } else {
-          rscss += 'color: #222;';
-          css += '#gsr .gpp-rs a:link {color:#11c} #gsr .gpp-rs em {color:#c11}\
-            #gsr .gpp-rs a:visited {color:#a0b}\
-            #gsr .gpp-rs a:active {color:#c11 !important}';
-        }
         var mth = setting.rsColorMethod.val;
         var eff = setting.rsColorEffect.val;
         if (mth == '1') {
@@ -2031,7 +2079,11 @@
     // go execute
     exec: function() {
       for (var i in com) {
-        com[i].run();
+        var c = com[i];
+        if (c.enabled) {
+          c.addCss && c.addCss();
+          c.run && c.run();
+        }
       }
     },
     // go isFirstRun
