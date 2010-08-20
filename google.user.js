@@ -118,7 +118,8 @@
         return this;
       },
       html: function(html) { // go $.html
-        if (html !== undefined && typeof html !== 'object') {
+        gm.log(html);
+        if (typeof html === 'string' || typeof html === 'number') {
           this.each(function(i, dom) {
             dom.innerHTML = html;
           });
@@ -591,7 +592,7 @@
       this.disable(id, container);
       return container;
     },
-    switch: (function() {
+    bool: (function() {
       var choices = {'1': __('Yes'), '0': __('No')};
       return function(id, val) {
         return cfgWidget.choices(id, val, choices);
@@ -795,7 +796,8 @@
     })(),
     // go cfg.createDd
     createDd: function(com) {
-      var dd = $('<dd>').html('<p>' + com.desc + '</p>');
+      var dd = $('<dd>');
+      $('<p>').html(com.desc).appendTo(dd);
       var ul = $('<ul>').appendTo(dd);
       var i = 0;
       for (var mid in com.groupLv2) {
@@ -851,10 +853,11 @@
     createTr: function(param) {
       var tr = $('<tr>');
       if (typeof param === 'string') {
-        return tr.html('<th colspan="2">' + param + '</th>');
+        $('<th>').attr({'colspan': '2'}).html(param).appendTo(tr);
+      } else {
+        $('<td>').html(param.name).appendTo(tr);
+        $('<td>').append(param.html()).appendTo(tr);
       }
-      $('<td>').html(param.name).appendTo(tr);
-      $('<td>').append(param.html()).appendTo(tr);
       return tr;
     },
     // go cfg.createbtnContainer
@@ -1193,7 +1196,7 @@
       groupLv3: groupLv3.leftSidebar,
       val: gm.get('gpp-autoHideLeftSidebar', '0'),
       html: function() {
-        return cfgWidget.switch(this.id, this.val);
+        return cfgWidget.bool(this.id, this.val);
       }
     },
     // go setting.autoHideRightSidebar
@@ -1202,7 +1205,7 @@
       groupLv3: groupLv3.rightSidebar,
       val: gm.get('gpp-autoHideRightSidebar', '0'),
       html: function() {
-        return cfgWidget.switch(this.id, this.val);
+        return cfgWidget.bool(this.id, this.val);
       }
     },
     // go setting.fixedSearchbar
@@ -1211,7 +1214,7 @@
       groupLv3: groupLv3.searchbar,
       val: gm.get('gpp-fixedSearchbar', '0'),
       html: function() {
-        return cfgWidget.switch(this.id, this.val);
+        return cfgWidget.bool(this.id, this.val);
       }
     },
     // go setting.rsShadow
@@ -1354,7 +1357,7 @@
       groupLv3: groupLv3.adCleaner,
       val: gm.get('gpp-sponsoredLinks', '0'),
       html: function() {
-        return cfgWidget.switch(this.id, this.val);
+        return cfgWidget.bool(this.id, this.val);
       }
     },
     // go setting.favicon
@@ -1363,7 +1366,7 @@
       groupLv3: groupLv3.imageRs,
       val: gm.get('gpp-favicon', '0'),
       html: function() {
-        return cfgWidget.switch(this.id, this.val);
+        return cfgWidget.bool(this.id, this.val);
       }
     },
     // go setting.preview
@@ -1565,7 +1568,7 @@
     // go com.background
     background: {
       // always enable, default is white
-      enable: true,
+      enabled: true,
       addCss: function() {
         var eff = setting.backgroundEffect.val,
           color = setting.backgroundColor.val,
@@ -1580,6 +1583,7 @@
             + '), rgb(' + util.rgbAdd(colors, -30).join(',') + '))'
         }
         // .gac_xxx is google auto complete
+        gm.log('dfdf');
         gm.css('body {\
           background:' + bgcolor + ';\
         }\
@@ -1642,7 +1646,7 @@
     },
     // go com.autoHideLeftSidebar
     autoHideLeftSidebar: {
-      enabled: setting.autoHideLeftSidebar.val !== '0',
+      enabled: +setting.autoHideLeftSidebar.val,
       addCss: function() {
         gm.css('#leftnav {\
           width: 151px !important;\
@@ -1664,7 +1668,7 @@
     },
     // go com.autoHideRightSidebar
     autoHideRightSidebar: {
-      enabled: setting.autoHideRightSidebar.val !== '0',
+      enabled: +setting.autoHideRightSidebar.val,
       hasRhs: (function() {
         return !!$('#rhs').size();
       })(),
@@ -1708,7 +1712,7 @@
     },
     // go com.fixedSearchbar
     fixedSearchbar: {
-      enabled: setting.fixedSearchbar.val !== '0',
+      enabled: +setting.fixedSearchbar.val,
       addCss: function() {
         gm.css('#gog, #sfcnt, #subform_ctrl {\
           position: fixed;\
@@ -1794,7 +1798,7 @@
       }
     },
     rsFontEffect: {
-      enabled: setting.rsFontEffect.val,
+      enabled: setting.rsFontEffect.val !== '1',
       addCss: function() {
         var css = '', 
           css2 = '', 
@@ -1845,27 +1849,23 @@
         gm.css('.gpp-rs {' + css + '}' + css2);
       }
     },
-    // go rsStyle
-    rsStyle: {
-      run: function() {
-        var mth = setting.rsColorMethod.val;
-        var eff = setting.rsColorEffect.val;
-        if (mth == '1') {
-          var rgb = setting.rsColorSchema.val.split(',');
-          rscss += 'background: ' + this.bgCss(rgb, eff) + ';';
-        }
-        // image
-        var type = setting.rsImageStyle.val;
-        if (type == 2) {
-          css += '.gpp-rs a > img, .gpp-rs td > img {\
-            border: 0;\
-            -moz-box-shadow: 0 1px 5px #000;\
-            opacity: .8;\
-          }';
-        }
-        // main css
-        gm.css('.gpp-rs {' + rscss + '}' + css);
-      },
+    // go com.rsImageStyle
+    rsImageStyle: {
+      enabled: setting.rsImageStyle.val !== '1',
+      addCss: function() {
+        gm.css('.gpp-rs a > img, .gpp-rs td > img {\
+          padding: 1px;\
+          border: 0;\
+          -moz-box-shadow: 0 1px 5px #000;\
+          opacity: .9;\
+        }');
+      }
+    },
+    // go com.rsBackground
+    rsBackground: {
+      // always run, default color is white
+      enabled: true,
+      colors: {},
       bgCss: function(rgb, eff) {
         switch (eff) {
           case '2': 
@@ -1885,35 +1885,39 @@
           default:
             return 'rgb(' + rgb.join(',') + ')';
         }
-      }
-    },
-    // rs rainbow
-    rsRainbow: {
-      enabled: setting.rsColorMethod.val !== '1',
-      colors: {},
+      },
+      addCss: function() {
+        if (setting.rsColorMethod.val === '1') {
+          gm.css('.gpp-rs { background: ' 
+            + this.bgCss(setting.rsColorSchema.val.split(','), setting.rsColorEffect.val) 
+            + '; }');
+        }
+      },
       run: function() {
         var mth = setting.rsColorMethod.val;
         var eff = setting.rsColorEffect.val;
-        var self = this;
-        var colors = this.colors;
-        $('.gpp-rs:not(.gpp-rainbow)').each(function(i, dom) {
-          var cur = $(dom);
-          cur.addClass('gpp-rainbow');
-          var tld = self.getTld(cur.children('.r a').attr('hostname'));
-          if (!colors[tld]) {
-            var tmp = [];
-            for (var i = 0; i < 3; i++) {
-              var tmp2 = parseInt(Math.random() * 80);
-              if (mth == '2') { // light
-                tmp2 += 170;
+        if (mth !== '1') {
+          var self = this;
+          var colors = this.colors;
+          $('.gpp-rs:not(.gpp-rainbow)').each(function(i, dom) {
+            var cur = $(dom);
+            cur.addClass('gpp-rainbow');
+            var tld = self.getTld(cur.children('.r a').attr('hostname'));
+            if (!colors[tld]) {
+              var tmp = [];
+              for (var i = 0; i < 3; i++) {
+                var tmp2 = parseInt(Math.random() * 80);
+                if (mth == '2') { // light
+                  tmp2 += 170;
+                }
+                tmp.push(tmp2);
               }
-              tmp.push(tmp2);
-            }
-            colors[tld] = tmp;
-          }          
-          var color = colors[tld];
-          cur.css({'background': com.rsStyle.bgCss(color, eff)});
-        })
+              colors[tld] = tmp;
+            }          
+            var color = colors[tld];
+            cur.css({'background': self.bgCss(color, eff)});
+          })
+        }
       },
       getTld: function(hostname) {
         // a very easy way, not very accurate
@@ -1937,100 +1941,91 @@
         gm.css('#tads {display: none}');
       }
     },
-    // go com.addImages, go com.favicon, go com.preview
-    addImages: {
+    // go com.favicon
+    favicon: {
+      enabled: +setting.favicon.val,
       addCss: function() {
-        var css = '';
-        if (this.favicon) {
-          css += 'img.gpp-favicon {\
-            width: 16px;\
-            height: 16px;\
-            margin: 0 4px 0 0;\
-            position: relative;\
-            top: 3px\
-          }';
-        }
-        if (this.preview != 1) {
-          css += 'a.gpp-preview {\
-            display: block;\
-            float: left;\
-            margin: 2px 8px 2px 0;\
-            text-align: center;' + (function(prev) {
-              if (prev == 2) {
-                return 'width: 111px; height: 82px; line-height: 82px;'
-              } else if (prev == 3) {
-                return 'width: 120px; height: 90px; line-height: 90px;'
-              }
-            })(this.preview) +
-          '}\
-          .gpp-rs:after {\
-            content: " ";\
-            display: block;\
-            clear: both;\
-            height: 1px;\
-          }';
-        }
-        css && gm.css(css);
+        gm.css('.gpp-rs img.gpp-favicon {\
+          width: 16px;\
+          height: 16px;\
+          margin: 0 6px 0 0;\
+          position: relative;\
+          font-size: 9px;\
+          top: 2px;\
+        }');
       },
       run: function() {
-        this.favicon = setting.favicon.val;
-        this.preview = setting.preview.val;
-        if (!this.favicon && this.preview == 1) return ;
-        this.addCss();
         var self = this;
         $('.gpp-rs .r > a').each(function(i, dom) {
           var a = $(dom);
           var protocol = a.attr('protocol');
           var host = a.attr('hostname');
           var domain = protocol + '//' + host;
-          if (self.favicon == 1) {
-            $('<img>').bind('error', function() {
-              var self = $(this);
-              self.attr({
-                'src': resource.defaultFavicon
-              });
-            }, false).attr({
-              'alt': '',
-              'width': 16,
-              'src': domain + '/favicon.ico'
-            }).insertBefore(a).addClass('gpp-favicon');
-          }
-          if (self.preview != 1) {
-            var prevLink = $('<a>').attr({
-              'href': a.attr('href'),
-              'target': '_blank'
-            }).addClass('gpp-preview').insertBefore(a.parent());
-            var src, width, height;
-            if (self.preview == 2) { // googlepreview.com
-              // get the servername
-              var s = domain.match(/:\/\/www\.(\w)|:\/\/(\w)/);
-              s = s[1] || s[2];
-              src = 'http://' + s + '.googlepreview.com/preview?s=' + domain;
-              width = 111; height = 82;
-            } else if (self.preview == 3) { // thumbshots.org
-              src ='http://open.thumbshots.org/image.pxf?url=' + domain; 
-              width = 120; height = 90;
-            }
-            var loadImg = $('<img>').attr({
-              'alt': 'loading ..',
-              'src': resource.loadingImage
-            }).appendTo(prevLink);
-            var prevImg = $('<img>').bind('load', function() {
-              loadImg.remove();
-              if (this.complete) {
-                $(this).appendTo(prevLink);
-              }
-            }, false).bind('error', function() {
-              loadImg.remove();
-              prevLink.html(__('No preview'));
-            }, false).attr({
-              'alt': '',
-              'src': src
-            });
-          }
+
+          $('<img>').attr({
+            'alt': 'fav',
+            'width': 16,
+            'src': domain + '/favicon.ico'
+          }).insertBefore(a).addClass('gpp-favicon');
         });
-      },
+      }
     },
+    // go com.preview
+    preview: {
+      enabled: setting.preview.val !== '1',
+      addCss: function() {
+        gm.css('a.gpp-preview {\
+          display: block;\
+          float: left;\
+          margin: 2px 8px 2px 0;\
+          text-align: center;' + (function(prev) {
+            if (prev === '2') {
+              return 'width: 111px; height: 82px; line-height: 82px;'
+            } else if (prev === '3') {
+              return 'width: 120px; height: 90px; line-height: 90px;'
+            }
+          })(setting.preview.val) +
+        '}\
+        .gpp-rs:after {\
+          content: " ";\
+          display: block;\
+          clear: both;\
+          height: 1px;\
+        }');
+      },
+      run: function() {
+        var self = this;
+        var siteId = setting.preview.val;
+        $('.gpp-rs .r > a').each(function(i, dom) {
+          var a = $(dom);
+          var protocol = a.attr('protocol');
+          var host = a.attr('hostname');
+          var domain = protocol + '//' + host;
+
+          var prevLink = $('<a>').attr({
+            'href': a.attr('href'),
+            'target': '_blank'
+          }).addClass('gpp-preview').insertBefore(a.parent());
+
+          var src, width, height;
+          if (siteId === '2') { // googlepreview.com
+            // get the servername
+            var s = domain.match(/:\/\/www\.(\w)|:\/\/(\w)/);
+            s = s[1] || s[2];
+            src = 'http://' + s + '.googlepreview.com/preview?s=' + domain;
+            width = 111; height = 82;
+          } else if (siteId === '3') { // thumbshots.org
+            src ='http://open.thumbshots.org/image.pxf?url=' + domain; 
+            width = 120; height = 90;
+          }
+
+          var loadImg = $('<img>').attr({
+            'alt': host,
+            'src': src
+          }).appendTo(prevLink);
+        });
+      }
+    }
   };
 
   // go app
