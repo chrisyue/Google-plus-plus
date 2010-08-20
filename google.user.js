@@ -1637,7 +1637,7 @@
     userstyle: {
       enabled: !!setting.css.val,
       addCss: function() {
-        gm.css(css);
+        gm.css(setting.css.val);
       }
     },
     // go com.autoHideLeftSidebar
@@ -1889,10 +1889,10 @@
     },
     // rs rainbow
     rsRainbow: {
+      enabled: setting.rsColorMethod.val !== '1',
       colors: {},
       run: function() {
         var mth = setting.rsColorMethod.val;
-        if (mth == '1') return ;
         var eff = setting.rsColorEffect.val;
         var self = this;
         var colors = this.colors;
@@ -1932,8 +1932,8 @@
       }
     },
     sponsoredLinks: {
+      enabled: +setting.sponsoredLinks.val,
       run: function() {
-        if (!setting.sponsoredLinks.val) return ;
         gm.css('#tads {display: none}');
       }
     },
