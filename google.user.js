@@ -118,7 +118,6 @@
         return this;
       },
       html: function(html) { // go $.html
-        gm.log(html);
         if (typeof html === 'string' || typeof html === 'number') {
           this.each(function(i, dom) {
             dom.innerHTML = html;
@@ -1507,7 +1506,17 @@
       },
       getTable: function() {
         if (!this.table) {
+          var cnt = +setting.colsNb.val;
           this.table = $('<table>').attr({'cellspacing': '15'}).addClass('gpp-cols');
+          var colgroup = $('<colgroup>').attr({
+            'span': cnt
+          }).appendTo(this.table);
+          var w = 100 / cnt;
+          for (var i = 0; i < cnt; i++) {
+            $('<col>').attr({
+              'width': w + '%'
+            }).appendTo(colgroup);
+          }
         }
         return this.table;
       },
@@ -1583,7 +1592,6 @@
             + '), rgb(' + util.rgbAdd(colors, -30).join(',') + '))'
         }
         // .gac_xxx is google auto complete
-        gm.log('dfdf');
         gm.css('body {\
           background:' + bgcolor + ';\
         }\
@@ -1978,14 +1986,8 @@
           display: block;\
           float: left;\
           margin: 2px 8px 2px 0;\
-          text-align: center;' + (function(prev) {
-            if (prev === '2') {
-              return 'width: 111px; height: 82px; line-height: 82px;'
-            } else if (prev === '3') {
-              return 'width: 120px; height: 90px; line-height: 90px;'
-            }
-          })(setting.preview.val) +
-        '}\
+          text-align: center;\
+        }\
         .gpp-rs:after {\
           content: " ";\
           display: block;\
@@ -2019,9 +2021,11 @@
             width = 120; height = 90;
           }
 
-          var loadImg = $('<img>').attr({
+          $('<img>').attr({
             'alt': host,
-            'src': src
+            'src': src,
+            'width': width,
+            'height': height
           }).appendTo(prevLink);
         });
       }
