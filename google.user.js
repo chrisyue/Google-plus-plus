@@ -186,7 +186,12 @@
           target = $(target);
         }
         this.each(function(i, dom) {
-          target.doms[0].parentNode.insertAfter(dom, target.doms[0]);
+          var t = target.doms[0];
+          if (t.nextSibling) {
+            t.parentNode.insertBefore(dom, t.nextSibling);
+          } else {
+            t.parentNode.appendChild(dom);
+          }
         });
         return this;
       },
@@ -366,7 +371,8 @@
   var shadow = {
     getInst: function() {
       if (!this.inst) {
-        this.inst = this.createShadow();
+        this.addCss();
+        this.inst = this.createInst();
       }
       return this.inst;
     },
@@ -399,8 +405,7 @@
       }
       return this;
     },
-    createShadow: function() { // this will only run once
-      this.addCss();
+    createInst: function() { // this will only run once
       return $('<div>').attr({'id': 'gpp-cfg-shadow'}).appendTo('body');
     },
     click: function(callback) { // go shadow.click
@@ -430,6 +435,34 @@
         return this;
       };
     })()
+  };
+  // go myRSBar
+  var myRSBar = {
+    getInst: function() {
+      if (!this.inst) {
+        this.addCss();
+        this.inst = this.createInst();
+      }
+      return this.inst;
+    },
+    createInst: function() {
+      return $('<div>').attr({
+        'id': 'gpp-rsBar'
+      }).insertAfter('#center_col');
+    },
+    addCss: function() {
+      gm.css('#gpp-rsBar {\
+        width: 302px;\
+        padding: 0 10px;\
+        position: absolute;\
+        top: 0;\
+        right: 0;\
+      }\
+      #center_col {\
+        margin-right: 324px;\
+        border-right: 1px solid #d3e1f9;\
+      }');
+    }
   };
 
   // go cfgWidget
@@ -700,6 +733,7 @@
     })(),
     // go cfgWidget.text
     text: function(id, val) {
+      val = val || '';
       var set = setting[id];
       var ret = $('<textarea>').bind('blur', function() {
         var self = $(this);
@@ -1159,6 +1193,10 @@
     imageRs: {
       name: __('Image'),
       groupLv2: groupLv2.rsEnrichment
+    },
+    ses: { // search engines
+      name: __('Search Engines'),
+      groupLv2: groupLv2.searches
     }
   }
 
@@ -1380,6 +1418,25 @@
           '3': 'thumbshots'
         });
       }
+    },
+    // go setting.ses
+    ses: { // search-engines
+      name: __('Code'),
+      groupLv3: groupLv3.ses,
+      val: gm.get('gpp-ses', '{'
+        + 'name: "Yahoo",'
+        + 'query: "http://search.yahoo.com/search?p={gpp-keyword}",'
+        + 'show: 0,'
+        + 'favicon: "http://search.yahoo.com/favicon.ico"'
+      + '},{'
+        + 'name: "Bing",'
+        + 'query: "http://www.bing.com/search?q={gpp-keyword}",'
+        + 'show: 0,'
+        + 'favicon: "http://www.bing.com/favicon.ico"'
+      + '}'),
+      html: function() {
+        return cfgWidget.text(this.id, this.val);
+      }
     }
   };
 
@@ -1464,17 +1521,7 @@
       KWlpa2trbW1tb29vcbGxs7OztbW1t7e3ufn5%2B%2Fv7%2Ff39%2F%2F%2F%2FwAAAAAAAAAAA\
       AAAAAAAAAAAAAAAAAAAAAWM4CWOZGmeaKqurDCw8PkAVWyPgHGrRD06gF3qMKCMKgCEEHUgGEW\
       FwBKFKIoggMj0VJ2IArqpwktKDCQXiGLLSCQivkuCYNmSGu4FOm03QdoJZH0mFQ5ag4gnEg4OD\
-      YyODQ%2BDFhKVlpaJmTAWFHGJFJaefRMSEROidqQRdZoXEqytsbKztLW2t7i5tCEAOw%3D%3D",
-    // firefox's default page favicon
-    defaultFavicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAA\
-      AAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAGfzAABthAAA+Q0AAIJ0AABohAA\
-      A4nMAADdOAAAW+oNGCysAAAEuSURBVHjanJO9TsMwFIWPQ8SUOaIDajJEqniBLGUAnosNqerGx\
-      gpvEg+R6BPQLVtZsRxZqIp9GZrEdn7UirOc2JE/n3tth0SEoigIF0hrrfM8f46iaNPNhd3H/Xo\
-      NMAAE644+dzukaXpVluXL6m71s7xdvvUAIgKBwIh5PlQcx4jjOOCcvx5/jyrLso8QAIwxICKAw\
-      fcZJUlyXVXVew8gIoDaPR13JaUE57wfB0Fge9AlYC2sc1dPjw84HL778dd+PwbAWThVwmJxMw3\
-      QWreJaeCuaHikcwmAiRaMZIzxAafmMc/9/dk8oGkaW/OFEZqmgX+RzpwCG3ak/R8CgBBidAfGP\
-      fRnhBAWIKU8LWrfAE28BRpEkFJagFKqjc4890vwCUopC6jrGpvtFv/R3wCdSeCu7DoW9wAAAAB\
-      JRU5ErkJggg=="
+      YyODQ%2BDFhKVlpaJmTAWFHGJFJaefRMSEROidqQRdZoXEqytsbKztLW2t7i5tCEAOw%3D%3D"
   };
   
   // go coms
@@ -1639,6 +1686,9 @@
         }\
         #gsr a:active {\
           color: #fff;\
+        }\
+        a > em {\
+          color: #f91;\
         }\
         a.gb1:active, a.gb2:active, a.gb3:active, a.gb4:active {\
           color: #fff !important;\
@@ -1862,10 +1912,10 @@
       enabled: setting.rsImageStyle.val !== '1',
       addCss: function() {
         gm.css('.gpp-rs a > img, .gpp-rs td > img {\
-          padding: 1px;\
+          padding: 2px;\
           border: 0;\
           -moz-box-shadow: 0 1px 5px #000;\
-          opacity: .9;\
+          background: rgba(255, 255, 255, .3);\
         }');
       }
     },
@@ -1988,6 +2038,10 @@
           margin: 2px 8px 2px 0;\
           text-align: center;\
         }\
+        a.gpp-preview img {\
+          display: block;\
+          overflow: hidden;\
+        }\
         .gpp-rs:after {\
           content: " ";\
           display: block;\
@@ -2020,7 +2074,6 @@
             src ='http://open.thumbshots.org/image.pxf?url=' + domain; 
             width = 120; height = 90;
           }
-
           $('<img>').attr({
             'alt': host,
             'src': src,
@@ -2028,6 +2081,77 @@
             'height': height
           }).appendTo(prevLink);
         });
+      }
+    },
+    // go com.ses
+    ses: {
+      enabled: !!setting.ses.val,
+      addCss: function() {
+        gm.css('.gpp-sesContainer2 .gpp-sesIco {\
+          margin-right: 8px;\
+          position: relative;\
+          top: 3px;\
+        }\
+        .gpp-sesContainer .gpp-sesIco {\
+          padding: 3px;\
+        }\
+        .gpp-sesIco {\
+          border: 0;\
+        }\
+        .gpp-sesContainer {\
+          position: absolute;\
+          right: 20px;\
+        }\
+        .gpp-sesContainer2 {\
+          list-style: none;\
+          padding: 0;\
+          margin: 0 0 10px;\
+        }');
+      },
+      getSesContainer: function() {
+        if (!this.sesContainer) {
+          this.sesContainer = this.createSesContainer();
+        }
+        return this.sesContainer;
+      },
+      createSesContainer: function() {
+        return $('<div>').addClass('gpp-sesContainer').appendTo('#sfcnt');
+      },
+      getSesContainer2: function() {
+        if (!this.sesContainer2) {
+          this.sesContainer2 = this.createSesContainer2();
+        }
+        return this.sesContainer2;
+      },
+      createSesContainer2: function() {
+        return $('<ul>').appendTo(myRSBar.getInst()).addClass('gpp-sesContainer2');
+      },
+      engines: function() {
+        return eval('[' + setting.ses.val + ']');
+      },
+      run: function() {
+        var keyword = $('input[name=q]').val();
+        var engines = this.engines();
+        for (var i = 0, len = engines.length; i < len; i++) {
+          var link = $("<a>").addClass('gpp-sesLink').attr({
+            'href': engines[i].query.replace('{gpp-keyword}', encodeURIComponent(keyword)),
+            'target': "_blank"
+          });
+          var ico  = $("<img>").attr({
+            'alt': "fav",
+            'src': engines[i].favicon || "http://" + engines[i].query.split('/')[2] + "/favicon.ico"
+          }).addClass('gpp-sesIco');
+
+          if (engines[i].show) {
+            link.html(__("Go to %engine%").replace('%engine%', '<em>' + engines[i].name + '</em>'));
+
+            $("<li>").append(ico)
+              .append(link)
+              .appendTo(this.getSesContainer2()); 
+          } else {
+            link.append(ico).appendTo(this.getSesContainer());
+          }
+        }
       }
     }
   };
