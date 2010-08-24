@@ -1213,6 +1213,7 @@
         return cfgWidget.number(this.id, this.val, 1);
       }
     },
+    // go setting.colsOrder
     colsOrder: {
       name: __('Order'),
       groupLv3: groupLv3.cols,
@@ -1268,6 +1269,15 @@
       name: __('Radius'),
       groupLv3: groupLv3.rsBorder,
       val: gm.get('gpp-rsRadius', '0'),
+      html: function() {
+        return cfgWidget.number(this.id, this.val, 0);
+      }
+    },
+    // go setting.rsBorderWidth
+    rsBorderWidth: {
+      name: __('Width'),
+      groupLv3: groupLv3.rsBorder,
+      val: gm.get('gpp-rsBorderWidth', '0'),
       html: function() {
         return cfgWidget.number(this.id, this.val, 0);
       }
@@ -1820,7 +1830,6 @@
       addCss: function() {
         gm.css('.gpp-rs {\
           -moz-box-shadow: 0 1px ' + setting.rsShadow.val + 'px #000;\
-          padding: 5px 10px;\
         }');
       }
     },
@@ -1830,13 +1839,22 @@
       addCss: function() {
         var radius = +setting.rsRadius.val;
         var css = '-moz-border-radius: ' + radius + 'px;';
+        var padd = 5;
         if (radius / 2 > 5) {
           padd = Math.ceil(radius / 2);
-          css += 'padding: ' + padd + 'px ' + padd * 2 + 'px;';
         }
+        css += 'padding: ' + padd + 'px ' + padd * 2 + 'px;';
         gm.css('.gpp-rs {' + css + '}');
       }
     },
+    // go com.rsBorderWidth
+    rsBorderWidth: {
+      enabled: +setting.rsBorderWidth.val > 0,
+      addCss: function() {
+        gm.css('.gpp-rs { border: ' + setting.rsBorderWidth.val + 'px solid rgba(100, 100, 100, .2) }');
+      }
+    },
+    // go com.rsFontSize
     rsFontSize: {
       // always run, default is title: 16, content: 13
       enabled: true,
@@ -1855,8 +1873,9 @@
         }');
       }
     },
+    // go com.rsFontEffect
     rsFontEffect: {
-      enabled: setting.rsFontEffect.val !== '1',
+      enabled: true,
       addCss: function() {
         var css = '', 
           css2 = '', 
@@ -2285,8 +2304,8 @@
             preview: '2',
             colsNb: '2',
             colsOrder: '1',
-            rsShadow: '3',
             rsRadius: '10',
+            rsBorderWidth: '2',
             rsColorMethod: '2'
           });
         });
