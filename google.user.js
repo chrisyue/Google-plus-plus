@@ -13,7 +13,8 @@
 (function() {
   // CONST
   var unsafeWindow = this['unsafeWindow'] || window;
-  var VER = '2.0.0';
+  var ver = '2.0.0';
+  var keyword = document.getElementsByName('q')[0].value;
 
   // it's not jquery, don't use it in your next project :)
   var $ = function(selector) {
@@ -275,7 +276,7 @@
     }
     return ret;
   };
-  // util
+  // go util
   var util = {
     rgbAdd: function(rgb, num) {
       var ret = [];
@@ -289,6 +290,34 @@
         ret.push(tmp);
       }
       return ret;
+    },
+    createLoadingImage: function() {
+      return $('<img>').attr({
+        'alt': 'loading',
+        'src': resource.loadingImage
+      });
+    },
+    createModuleFrame: function(title) {
+      if (!this.addedModuleFrameCss) {
+        gm.css('.gpp-moduleFrame {\
+          width: 300px;\
+          background: #fff;\
+          margin-bottom: 10px;\
+          border: 1px solid rgba(255,255,255,0.3);\
+          -moz-box-shadow: 0 1px 4px #000\
+        }\
+        .gpp-moduleFrame > h3 {\
+          background: -moz-linear-gradient(top, #fff, #ccc);\
+          margin: 0;\
+          padding: 5px;\
+          font-weight: bold;\
+          color: #333;\
+        }');
+        this.addedModuleFrameCss = true;
+      }
+      var frame = $('<div>').addClass('gpp-moduleFrame');
+      var header = $('<h3>').html(title).appendTo(frame);
+      return frame.appendTo(myRSBar.getElm());
     }
   };
   // go gm api
@@ -369,10 +398,10 @@
 
   // go shadow
   var shadow = {
-    getInst: function() {
+    getElm: function() {
       if (!this.inst) {
         this.addCss();
-        this.inst = this.createInst();
+        this.inst = this.createElm();
       }
       return this.inst;
     },
@@ -393,24 +422,24 @@
       }');
     },
     show: function() {
-      this.getInst().removeClass('gpp-hidden');
+      this.getElm().removeClass('gpp-hidden');
       this.centerBox();
       return this;
     },
     hide: function() {
-      var shadow = this.getInst().addClass('gpp-hidden');
+      var shadow = this.getElm().addClass('gpp-hidden');
       if (this.callback) {
         shadow.unbind('click', this.callback);
         delete this.callback;
       }
       return this;
     },
-    createInst: function() { // this will only run once
+    createElm: function() { // this will only run once
       return $('<div>').attr({'id': 'gpp-cfg-shadow'}).appendTo('body');
     },
     click: function(callback) { // go shadow.click
       this.callback = callback;
-      this.getInst().bind('click', this.callback);
+      this.getElm().bind('click', this.callback);
       return this;
     },
     setBox: function(box) {
@@ -438,14 +467,14 @@
   };
   // go myRSBar
   var myRSBar = {
-    getInst: function() {
+    getElm: function() {
       if (!this.inst) {
         this.addCss();
-        this.inst = this.createInst();
+        this.inst = this.createElm();
       }
       return this.inst;
     },
-    createInst: function() {
+    createElm: function() {
       return $('<div>').attr({
         'id': 'gpp-rsBar'
       }).insertAfter('#center_col');
@@ -1195,8 +1224,24 @@
       groupLv2: groupLv2.rsEnrichment
     },
     ses: { // search engines
-      name: __('Search Engines'),
+      name: __('Search engines'),
       groupLv2: groupLv2.searches
+    },
+    morePicture: {
+      name: __('Pictures'),
+      groupLv2: groupLv2.otherRs
+    },
+    moreVideo: {
+      name: __('Videos'),
+      groupLv2: groupLv2.otherRs
+    },
+    moreDefination: {
+      name: __('Definations'),
+      groupLv2: groupLv2.otherRs
+    },
+    moreMessage: {
+      name: __('Real-time messages'),
+      groupLv2: groupLv2.otherRs
     }
   }
 
@@ -1446,6 +1491,15 @@
       + '}'),
       html: function() {
         return cfgWidget.text(this.id, this.val);
+      }
+    },
+    // go setting.flickr
+    flickr: {
+      name: __('Flickr'),
+      groupLv3: groupLv3.morePicture,
+      val: gm.get('gpp-flickr', '0'),
+      html: function() {
+        return cfgWidget.bool(this.id, this.val);
       }
     }
   };
@@ -2143,13 +2197,12 @@
         return this.sesContainer2;
       },
       createSesContainer2: function() {
-        return $('<ul>').appendTo(myRSBar.getInst()).addClass('gpp-sesContainer2');
+        return $('<ul>').appendTo(myRSBar.getElm()).addClass('gpp-sesContainer2');
       },
       engines: function() {
         return eval('[' + setting.ses.val + ']');
       },
       run: function() {
-        var keyword = $('input[name=q]').val();
         var engines = this.engines();
         for (var i = 0, len = engines.length; i < len; i++) {
           var link = $("<a>").addClass('gpp-sesLink').attr({
@@ -2171,6 +2224,115 @@
             link.append(ico).appendTo(this.getSesContainer());
           }
         }
+      }
+    },
+    // go com.flickr
+    flickr: {
+      enabled: +setting.flickr.val,
+      run: function() {
+        this.frame = util.createModuleFrame(__('Flickr'));
+        //this.showData(1);  // First run
+      },
+      showData: function(page) {
+        var frame  = this.frame;
+        var header = frame.children('h3');
+        // clear paging container, it will be recreated later..
+        if (header.children('div').size()) {
+          header.children('div').remove();
+        }
+        while (header.next().size()) { // clear the result ..
+          header.next().remove()
+        }
+        var loadingImage = util.createLoadingImage().appendTo(frame);
+        // flickr api params
+        // @link http://www.flickr.com/services/api/flickr.photos.search.html
+        var param = [];
+        param.push("method=flickr.photos.search");
+        param.push("api_key=bfedfb888337696dd2a44fa89b6eab88");
+        param.push("text=" + encodeURIComponent(keyword));
+        param.push("sort=relevance");
+        param.push("per_page=16");
+        param.push("page=" + page);
+        param.push("format=json");
+        param.push("nojsoncallback=1");
+        
+        var api_url = "http://api.flickr.com/services/rest?" + param.join("&");
+
+        var request = {
+          method: 'GET',
+          url: api_url,
+          headers: {
+            'User-agent': 'Mozilla/4.0 (compatible) Greasemonkey',
+            'Accept': 'text/html',
+          },
+          onload: function(response) {
+            remove(loadingImage);
+            var data = eval("(" + response.responseText + ")");
+            if ( data.photos.total == 0 ) { // No any photo ...
+              append(util.createExceptionContainer(__("No related pictures")), flickr);
+              return;
+            }
+            
+            if ( data.photos.pages > 1 ) { // If there are more than 1 pages ..
+              var divPage = create("div");
+              divPage.style.cssFloat = "right";
+              before(divPage, title.firstChild);
+              
+              if ( 1 < page ) { // If current page is not first
+                var prev = create("a");
+                with (prev) {
+                  href = "javascript:void(0)"; title = __("Prev"); innerHTML = "&lt;";
+                  style.fontSize = "9pt";
+                  style.margin = "4px";
+                  addEventListener("click", function() {
+                    modules.flickr.showData(page - 1);
+                  }, false);
+                }
+                append(prev, divPage);
+              }
+              var current = create("span");
+              with (current) {
+                innerHTML = page;
+                style.fontSize = "9pt";
+              }
+              append(current, divPage);
+              if ( data.photos.pages > page ) { // If current page is not last
+                var next = create("a");
+                with (next) {
+                  href = "javascript:void(0)"; title = __("Next"); innerHTML = "&gt;";
+                  style.fontSize = "9pt"; style.margin = "4px";
+                  addEventListener("click", function() {
+                    modules.flickr.showData(page + 1);
+                  }, false);
+                }
+                append(next, divPage);
+              }
+            }
+            var images = data.photos.photo;
+            for (var i = 0; i < images.length; i++) {
+              src = "http://farm" + images[i].farm
+                + ".static.flickr.com/" + images[i].server
+                + "/" + images[i].id + "_" + images[i].secret
+                + "_s.jpg";
+              url = "http://www.flickr.com/photos/" + images[i].owner
+                + "/" + images[i].id;
+              img = create("img");
+              img.alt = __("loading...");
+              img.src = src;
+
+              with (img.style) {
+                width = height = "75px"; borderWidth = 0; verticalAlign = "middle";
+              }
+              link = create("a");
+              with (link) {
+                href = url; target = "_blank";
+              }
+              append(img, link);
+              append(link, flickr);
+            }
+          }
+        };
+        GM_xmlhttpRequest(request);
       }
     }
   };
@@ -2305,7 +2467,7 @@
             colsNb: '2',
             colsOrder: '1',
             rsRadius: '10',
-            rsBorderWidth: '2',
+            rsBorderWidth: '1',
             rsColorMethod: '2'
           });
         });
@@ -2324,7 +2486,7 @@
             rsRadius: '10',
             rsColorMethod: '3',
             fixedSearchbar: '1',
-            rsFontSize: -1,
+            rsFontSize: '-1',
             rsFontEffect: '2',
             rsColorEffect: '3',
             rsImageStyle: '2',
