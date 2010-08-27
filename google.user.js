@@ -178,9 +178,7 @@
           var next = this.doms[i].nextSibling;
           next && ret.push(next);
         }
-        if (ret.length) {
-          return $(ret);
-        }
+        return $(ret);
       },
       insertAfter: function(target) { // go $.insertAfter
         if (typeof target === 'string') {
@@ -215,7 +213,7 @@
           return $(ret);
         }
       },
-      children: function(selector) { // go $.children
+      find: function(selector) { // go $.find
         var ret = [];
         if (typeof selector === 'string') {
           this.each(function(i, dom) {
@@ -224,16 +222,8 @@
               ret.push(rs[i]);
             }
           });
-        } else {
-          this.each(function(i, dom) {
-            for (var i = 0, len = dom.childNodes.length; i < len; i++) {
-              ret.push(dom.childNodes[i]);
-            }
-          });
         }
-        if (ret.length) {
-          return $(ret);
-        }
+        return $(ret);
       },
       remove: function(selector) {
         if (selector) {
@@ -689,13 +679,13 @@
       }');
       var changeColor = function(self, set) {
         set.val = self.attr('gpp-rgb');
-        self.parent().parent().next().children('.gpp-cfg-screen').css({
+        self.parent().parent().next().find('.gpp-cfg-screen').css({
           background: self.css('background')
         }).html(set.val);
         set.changed = true;
       };
       var rgbAdd = function(self, set, add) {
-        var scr = self.parent().children('.gpp-cfg-screen');
+        var scr = self.parent().find('.gpp-cfg-screen');
         var rgb = scr.html().split(',');
         for (var i = 0, len = rgb.length; i < len; i++) {
           var tmp = +rgb[i] + add;
@@ -890,7 +880,7 @@
       var cls = 'gpp-cfg-currentSubTab';
       return function(li) {
         if (li.hasClass(cls)) return;
-        var cur = li.parent().children('.' + cls);
+        var cur = li.parent().find('.' + cls);
         cur.removeClass(cls);
         $(cur.attr('gpp-to')).addClass('gpp-hidden');
 
@@ -2033,7 +2023,7 @@
           $('.gpp-rs:not(.gpp-rainbow)').each(function(i, dom) {
             var cur = $(dom);
             cur.addClass('gpp-rainbow');
-            var tld = self.getTld(cur.children('.r a').attr('hostname'));
+            var tld = self.getTld(cur.find('.r a').attr('hostname'));
             if (!colors[tld]) {
               var tmp = [];
               for (var i = 0; i < 3; i++) {
@@ -2229,16 +2219,25 @@
     // go com.flickr
     flickr: {
       enabled: +setting.flickr.val,
+      addCss: function() {
+        gm.css('.gpp-moduleFramePager {\
+          float: right;\
+          font-size: 9pt;\
+        }\
+        .gpp-moduleFramePagerPrev {\
+          margin: 4px;\
+        }');
+      },
       run: function() {
         this.frame = util.createModuleFrame(__('Flickr'));
-        //this.showData(1);  // First run
+        this.showData(1);  // first run
       },
       showData: function(page) {
         var frame  = this.frame;
-        var header = frame.children('h3');
+        var header = frame.find('h3');
         // clear paging container, it will be recreated later..
-        if (header.children('div').size()) {
-          header.children('div').remove();
+        if (header.find('div').size()) {
+          header.find('div').remove();
         }
         while (header.next().size()) { // clear the result ..
           header.next().remove()
@@ -2266,38 +2265,28 @@
             'Accept': 'text/html',
           },
           onload: function(response) {
-            remove(loadingImage);
+            loadingImage.remove();
             var data = eval("(" + response.responseText + ")");
             if ( data.photos.total == 0 ) { // No any photo ...
               append(util.createExceptionContainer(__("No related pictures")), flickr);
               return;
             }
             
-            if ( data.photos.pages > 1 ) { // If there are more than 1 pages ..
-              var divPage = create("div");
-              divPage.style.cssFloat = "right";
-              before(divPage, title.firstChild);
+            if (data.photos.pages > 1) { // If there are more than 1 pages ..
+              var divPage = $("<div>").addClass('gpp-moduleFramePager').prependTo(header);
               
               if ( 1 < page ) { // If current page is not first
-                var prev = create("a");
-                with (prev) {
-                  href = "javascript:void(0)"; title = __("Prev"); innerHTML = "&lt;";
-                  style.fontSize = "9pt";
-                  style.margin = "4px";
-                  addEventListener("click", function() {
-                    modules.flickr.showData(page - 1);
-                  }, false);
-                }
-                append(prev, divPage);
+                $("<a>").attr({
+                  'href': '#gpp-goToPrev',
+                  'title': __("Prev"),
+                }).html("&lt;").addClass('gpp-moduleFramePagerPrev').bind('click', function() {
+                  com.flickr.showData(page - 1);
+                  e.preventDefault();
+                }).divPage;
               }
-              var current = create("span");
-              with (current) {
-                innerHTML = page;
-                style.fontSize = "9pt";
-              }
-              append(current, divPage);
-              if ( data.photos.pages > page ) { // If current page is not last
-                var next = create("a");
+              var current = $("<span>").html(page).appendTo(divPage);
+              if (data.photos.pages > page) { // If current page is not last
+                var next = $("<a>").;
                 with (next) {
                   href = "javascript:void(0)"; title = __("Next"); innerHTML = "&gt;";
                   style.fontSize = "9pt"; style.margin = "4px";
