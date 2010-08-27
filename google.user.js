@@ -302,12 +302,28 @@
           padding: 5px;\
           font-weight: bold;\
           color: #333;\
+        }\
+        #gsr .gpp-moduleFrame a:link {\
+          color:#11c;\
+        }\
+        #gsr .gpp-moduleFrame a:visited {\
+          color:#a0b;\
+        }\
+        #gsr .gpp-moduleFrame a:active {\
+          color:#c11;\
         }');
         this.addedModuleFrameCss = true;
       }
       var frame = $('<div>').addClass('gpp-moduleFrame');
       var header = $('<h3>').html(title).appendTo(frame);
       return frame.appendTo(myRSBar.getElm());
+    },
+    createModuleFrameCommonContainer: function() {
+      if (!this.addedModuleFrameCommonContainerCss) {
+        gm.css('.gpp-moduleFrameCommonContainer { text-align: center; }');
+        this.addedModuleFrameCommonContainerCss = true;
+      }
+      return $("<p>").addClass('gpp-moduleFrameCommonContainer');
     }
   };
   // go gm api
@@ -2224,8 +2240,27 @@
           float: right;\
           font-size: 9pt;\
         }\
-        .gpp-moduleFramePagerPrev {\
+        .gpp-moduleFrame a.gpp-flickr {\
+          background: #fff;\
+          display: block;\
+          float: left;\
+          width: 75px;\
+          height: 75px;\
+          overflow: hidden;\
+        }\
+        .gpp-moduleFrame a.gpp-flickr img {\
+          border: 0;\
+          font-size: 9px;\
+          overflow: hidden;\
+          vertical-align: middle;\
+        }\
+        .gpp-moduleFramePager a {\
           margin: 4px;\
+        }\
+        .gpp-moduleFrame:after {\
+          content: " ";\
+          display: block;\
+          clear: both;\
         }');
       },
       run: function() {
@@ -2242,7 +2277,9 @@
         while (header.next().size()) { // clear the result ..
           header.next().remove()
         }
-        var loadingImage = util.createLoadingImage().appendTo(frame);
+        var loadingImage = util.createModuleFrameCommonContainer()
+          .append(util.createLoadingImage())
+          .appendTo(frame);
         // flickr api params
         // @link http://www.flickr.com/services/api/flickr.photos.search.html
         var param = [];
@@ -2267,8 +2304,10 @@
           onload: function(response) {
             loadingImage.remove();
             var data = eval("(" + response.responseText + ")");
-            if ( data.photos.total == 0 ) { // No any photo ...
-              append(util.createExceptionContainer(__("No related pictures")), flickr);
+            if (data.photos.total == 0) { // No any photo ...
+              util.createModuleFrameCommonContainer()
+                .html(__("No related pictures"))
+                .appendTo(frame);
               return;
             }
             
@@ -2279,45 +2318,38 @@
                 $("<a>").attr({
                   'href': '#gpp-goToPrev',
                   'title': __("Prev"),
-                }).html("&lt;").addClass('gpp-moduleFramePagerPrev').bind('click', function() {
+                }).html("&lt;").bind('click', function(e) {
                   com.flickr.showData(page - 1);
                   e.preventDefault();
-                }).divPage;
+                }).appendTo(divPage);
               }
               var current = $("<span>").html(page).appendTo(divPage);
               if (data.photos.pages > page) { // If current page is not last
-                var next = $("<a>").;
-                with (next) {
-                  href = "javascript:void(0)"; title = __("Next"); innerHTML = "&gt;";
-                  style.fontSize = "9pt"; style.margin = "4px";
-                  addEventListener("click", function() {
-                    modules.flickr.showData(page + 1);
-                  }, false);
-                }
-                append(next, divPage);
+                var next = $("<a>").attr({
+                  'href': '#gpp-goToNext',
+                  'title': __("Next")
+                }).html("&gt;").bind('click', function(e) {
+                  com.flickr.showData(page + 1);
+                  e.preventDefault();
+                }).appendTo(divPage);
               }
             }
             var images = data.photos.photo;
             for (var i = 0; i < images.length; i++) {
-              src = "http://farm" + images[i].farm
+              var src = "http://farm" + images[i].farm
                 + ".static.flickr.com/" + images[i].server
                 + "/" + images[i].id + "_" + images[i].secret
                 + "_s.jpg";
-              url = "http://www.flickr.com/photos/" + images[i].owner
+              var url = "http://www.flickr.com/photos/" + images[i].owner
                 + "/" + images[i].id;
-              img = create("img");
-              img.alt = __("loading...");
-              img.src = src;
-
-              with (img.style) {
-                width = height = "75px"; borderWidth = 0; verticalAlign = "middle";
-              }
-              link = create("a");
-              with (link) {
-                href = url; target = "_blank";
-              }
-              append(img, link);
-              append(link, flickr);
+              var img = $("<img>").attr({
+                'alt': images[i].title,
+                'src': src
+              });
+              var link = $("<a>").attr({
+                'href': url,
+                'target': '_blank'
+              }).addClass('gpp-flickr').append(img).appendTo(frame);
             }
           }
         };
