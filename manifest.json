@@ -1,0 +1,12 @@
+{
+   "content_scripts": [ {
+      "exclude_globs": [  ],
+      "include_globs": [ "http://www.google.com/*", "https://www.google.com/*", "https://encrypted.google.com/*" ],
+      "js": [ "google.user.js" ],
+      "matches": [ "http://*/*", "https://*/*" ]
+   } ],
+   "converted_from_user_script": true,
+   "description": "Ready for the Google++ 2.0",
+   "name": "Google++",
+   "version": "2.0.0"
+}
