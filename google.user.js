@@ -15,6 +15,11 @@
   var unsafeWindow = this['unsafeWindow'] || window;
   var ver = '2.0.0';
   var keyword = document.getElementsByName('q')[0].value;
+  // check if has working greasemonkey api
+  var isGmStorageWorking = (function() {
+    GM_setValue('test', 1);
+    return !!GM_getValue('test');
+  })();
 
   // it's not jquery, don't use it in your next project :)
   var $ = function(selector) {
@@ -329,16 +334,23 @@
   // go gm api
   var gm = {
     get: (function() {
-      if (GM_getValue) {
+      if (isGmStorageWorking) {
         return function(key, def) {
           return GM_getValue(key, def);
         };
       } else if (localStorage) {
-        
+        return function(key, def) {
+          var ret = localStorage.getItem(key);
+          if (ret === undefined || ret === null) {
+            return def;
+          } else {
+            return ret;
+          } 
+        }
       }
     })(),
     set: (function() {
-      if (GM_setValue) {
+      if (isGmStorageWorking) {
         return function(key, val) {
           GM_setValue(key, val);
         };
@@ -810,6 +822,7 @@
       // go css cfgBtn
       gm.css('#gpp-cfg-cfgBtn {\
         background: -moz-linear-gradient(top, #56c, #233);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#56c), to(#233));\
         position: absolute;\
         z-index: 20;\
         top: 2px;\
@@ -2377,12 +2390,15 @@
       .gpp-btn {\
         font: 13px/18px Tahoma, Helvetica, Arial, sans-serif;\
         -moz-box-shadow: 0 1px 2px #000;\
+        -webkit-box-shadow: 0 1px 2px #000;\
         padding: 0 10px;\
         -moz-border-radius: 10px;\
+        -webkit-border-radius: 10px;\
         text-align: center;\
       }\
       .gpp-btn:active {\
         -moz-box-shadow: 0 1px 1px #000;\
+        -webkit-box-shadow: 0 1px 1px #000;\
         position: relative;\
         top: 1px;\
       }\
