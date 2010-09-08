@@ -1,7 +1,7 @@
 {
    "content_scripts": [ {
       "exclude_globs": [  ],
-      "include_globs": [ "http://www.google.com/*", "https://www.google.com/*", "https://encrypted.google.com/*" ],
+      "include_globs": [ "http://*.google.*", "https://*.google.*" ],
       "js": [ "google.user.js" ],
       "matches": [ "http://*/*", "https://*/*" ]
    } ],

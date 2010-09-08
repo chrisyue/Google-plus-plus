@@ -3,9 +3,9 @@
 // @namespace     http://www.5isharing.com/
 // @version       2.0.0
 // @description   Ready for the Google++ 2.0
-// @include       http://www.google.tld/*
-// @include       https://www.google.tld/search?*
-// @include       https://encrypted.google.com/search?*
+// @include       http://*.google.*
+// @include       https://*.google.*
+// @include       https://*.google.*
 // @copyright     2009+, chrisyue
 // @license       GPL version 3 or any later version; http://www.gnu.org/copyleft/gpl.html
 // ==/UserScript==
@@ -17,6 +17,9 @@
   var keyword = document.getElementsByName('q')[0].value;
   // check if has working greasemonkey api
   var isGmStorageWorking = (function() {
+    if (!GM_setValue) {
+      return false;
+    }
     GM_setValue('test', 1);
     return !!GM_getValue('test');
   })();
@@ -523,6 +526,7 @@
       .gpp-cfg-minus, .gpp-cfg-plus {\
         padding: 0 10px;\
         background: -moz-linear-gradient(top, #555, #111);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#111));\
         color: #fff;\
         text-shadow: 0 -1px 0 #000;\
         cursor: pointer;\
@@ -531,29 +535,36 @@
       }\
       .gpp-cfg-minus:hover, .gpp-cfg-plus:hover {\
         background: -moz-linear-gradient(top, #f70, #a40);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#f70), to(#a40));\
         text-shadow: 0 0 2px #fff;\
       }\
       .gpp-cfg-minus:active, .gpp-cfg-plus:active {\
         background: -moz-linear-gradient(top, #555, #111);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#111));\
         text-shadow: 0 -1px 0 #000;\
         top: 0px;\
       }\
       .gpp-cfg-screen {\
         width: 40px;\
         background: -moz-linear-gradient(top, #fff, #eee 40%, #ccc 40%, #ddd);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#fff), color-stop(40%, #eee), color-stop(40%, #ccc), to(#ddd));\
         position: relative;\
         top: -1px;\
       }\
       .gpp-cfg-minus {\
         -moz-border-radius: 10px 0 0 10px;\
+        -webkit-border-radius: 10px 0 0 10px;\
       }\
       .gpp-cfg-plus {\
         -moz-border-radius: 0 10px 10px 0;\
+        -webkit-border-radius: 0 10px 10px 0;\
       }\
       .gpp-cfg-numberTuner {\
         float: left;\
         -moz-border-radius: 10px;\
+        -webkit-border-radius: 10px;\
         -moz-box-shadow: 0 0 4px #000;\
+        -webkit-box-shadow: 0 0 4px #000;\
         background: #333;\
       }');
     },
@@ -604,7 +615,9 @@
       gm.css('.gpp-cfg-choiceContainer {\
         float: left;\
         -moz-border-radius: 10px;\
+        -webkit-border-radius: 10px;\
         -moz-box-shadow: 0 1px 2px #000;\
+        -webkit-box-shadow: 0 1px 2px #000;\
         background: #999;\
       }\
       .gpp-cfg-choiceContainer div {\
@@ -615,31 +628,40 @@
         color: #fff;\
         text-shadow: 0 -1px 0 #000;\
         background: -moz-linear-gradient(top, #555, #111);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#555), to(#111));\
       }\
       .gpp-cfg-choiceContainer div:first-child {\
         -moz-border-radius: 10px 0 0 10px;\
+        -webkit-border-radius: 10px 0 0 10px;\
         margin-left: 0;\
       }\
       .gpp-cfg-choiceContainer div:last-child {\
         -moz-border-radius: 0 10px 10px 0;\
+        -webkit-border-radius: 0 10px 10px 0;\
         margin-right: 0;\
       }\
       .gpp-cfg-choiceContainer div.gpp-cfg-selected {\
         text-shadow: 0 0 2px #fff;\
         background: -moz-linear-gradient(top, #55f, #369);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#55f), to(#369));\
         -moz-box-shadow: 0 0 2px #55f;\
+        -webkit-box-shadow: 0 0 2px #55f;\
       }\
       .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):hover {\
         text-shadow: 0 0 2px #fff;\
         background: -moz-linear-gradient(top, #f70, #a40);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#f70), to(#a40));\
         -moz-box-shadow: 0 0 2px #f70;\
+        -webkit-box-shadow: 0 0 2px #f70;\
       }\
       .gpp-cfg-choiceContainer div:not(.gpp-cfg-selected):active {\
         text-shadow: 0 -1px 0 #000;\
         background: -moz-linear-gradient(top, #555, #111);\
+        background: -webkit-gradient(linear, left top, bottom top, from(#555), to(#111));\
         position: relative;\
         top: 1px;\
         -moz-box-shadow: 0 0 0 #000;\
+        -webkit-box-shadow: 0 0 0 #000;\
       }');
     },
     choices: function(id, val, choices) {
@@ -690,6 +712,7 @@
       }
       gm.css('.gpp-cfg-colorpickerTable {\
         -moz-box-shadow: 0 1px 2px #000;\
+        -webkit-box-shadow: 0 1px 2px #000;\
         float: left;\
         margin-right: 10px;\
       }\
@@ -990,6 +1013,7 @@
         width: 560px;\
         background: #fff;\
         -moz-box-shadow: 0 5px 10px #111;\
+        -webkit-box-shadow: 0 5px 10px #111;\
         font-family: Tahoma, Helvetica, Arial, Sans-serif;\
         margin: 0;\
         color: #222;\
@@ -999,12 +1023,15 @@
         letter-spacing: 3px;\
         padding: 5px 10px;\
         background: -moz-linear-gradient(top, #48c, #246);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#48c), to(#246));\
       }\
       #gpp-cfg-content dt:hover {\
         background: -moz-linear-gradient(top, #5af, #369);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#5af), to(#369));\
       }\
       #gpp-cfg-content dt:active {\
         background: -moz-linear-gradient(top, #369, #123);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#369), to(#123));\
       }\
       #gpp-cfg-content dt.gpp-cfg-currentTab {\
         text-shadow: 0 0 2px #fff;\
@@ -1015,6 +1042,7 @@
         padding: 5px 10px;\
         height: 260px;\
         background: -moz-linear-gradient(top, #999, #fff 5%, #def);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#999), color-stop(5%, #fff), to(#def));\
       }\
       #gpp-cfg-content dt:not(.gpp-cfg-currentTab) + dd {\
         display: none;\
@@ -1035,21 +1063,25 @@
       }\
       #gpp-cfg-okBtn {\
         background: -moz-linear-gradient(top, #393, #131);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#393), to(#131));\
       }\
       #gpp-cfg-cancelBtn {\
         background: -moz-linear-gradient(top, #933, #311);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#933), to(#311));\
       }\
       #gpp-cfg-okBtn:hover {\
         background: -moz-linear-gradient(top, #2e2, #292);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#2e2), to(#292));\
       }\
       #gpp-cfg-cancelBtn:hover {\
         background: -moz-linear-gradient(top, #e22, #922);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#e22), to(#922));\
       }\
       #gpp-cfg-okBtn:active {\
-        background: -moz-linear-gradient(top, #393, #131);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#393), to(#131));\
       }\
       #gpp-cfg-cancelBtn:active {\
-        background: -moz-linear-gradient(top, #933, #311);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#933), to(#311));\
       }\
       #gpp-cfg-content dd > p {\
         margin: 0;\
@@ -1065,13 +1097,16 @@
       #gpp-cfg-content li {\
         margin: 10px 10px 10px 5px;\
         background: -moz-linear-gradient(top, #369, #123);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#369), to(#123));\
       }\
       #gpp-cfg-content li.gpp-cfg-currentSubTab, #gpp-cfg-content li:hover {\
         background: -moz-linear-gradient(top, #55f, #369);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#55f), to(#369));\
         text-shadow: 0 0 2px #fff;\
       }\
       #gpp-cfg-content li:active {\
         background: -moz-linear-gradient(top, #369, #123);\
+        background: -webkit-gradient(linear, left top, left bottom, from(#369), to(#123));\
         text-shadow: 0 -1px 0 #000;\
       }\
       .gpp-cfg-tableContainer {\
