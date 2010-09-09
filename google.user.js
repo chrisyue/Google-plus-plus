@@ -2115,7 +2115,7 @@
                   return 'rgb(' + rgb.join(',') + ')';
               }
           default:
-            return 'background: rgb(' + rgb.join(',') + ');';
+            return 'rgb(' + rgb.join(',') + ')';
         }
       },
       addCss: function() {
