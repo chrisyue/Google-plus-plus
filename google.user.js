@@ -23,6 +23,20 @@
     GM_setValue('test', 1);
     return !!GM_getValue('test');
   })();
+  // check the gradient css engine;
+  var cssGradientEngine = (function() {
+    var div = document.createElement('div');
+
+    div.style.background = '-moz-linear-gradient(top, #000, #fff)';
+    div.style.background = '-webkit-gradient(linear, left top, left bottom, from(#000), to(#fff))';
+    if (div.style.background.indexOf('moz') === 1) {
+      return 'gecko';
+    }
+    if (div.style.background.indexOf('webkit') === 1) {
+      return 'webkit';
+    }
+    return false;
+  })();
 
   // it's not jquery, don't use it in your next project :)
   var $ = function(selector) {
@@ -756,7 +770,7 @@
         set.changed = true;
       };
       return function(id, val) {
-        var drag = false; // i mean draggable
+        var isMousedown = false; 
         var set = setting[id];
         var div = $('<div>').addClass('gpp-cfg-colorpicker')
           .attr({'id': 'gpp-' + id}); // add this to make disable work
@@ -764,10 +778,10 @@
           'cellpadding': '0',
           'cellspacing': '0'
         }).addClass('gpp-cfg-colorpickerTable').bind('mousedown', function() {
-          drag = true;
+          isMousedown = true;
         }).appendTo(div);
         $('body').bind('mouseup', function() {
-          drag = false;
+          isMousedown = false;
         });
         var tr = $('<tr>').appendTo(table);
         for (var i = 0, len = colors.length; i < len; i++) {
@@ -776,7 +790,7 @@
             $('<td>').attr({'gpp-rgb': rgb}).css({
               'background': 'rgb(' + rgb + ')'
             }).appendTo(tr).bind('mouseover', function() {
-              if (!drag) return ;
+              if (!isMousedown) return ;
               changeColor($(this), set);
             }).bind('mousedown', function() {
               changeColor($(this), set);
@@ -1745,16 +1759,25 @@
       enabled: true,
       addCss: function() {
         var eff = setting.backgroundEffect.val,
-          color = setting.backgroundColor.val,
-          bgcolor;
+          color = setting.backgroundColor.val;
 
+        var bgcolor;
         if (eff === '1') {
           bgcolor = 'rgb(' + color + ')';
         } else {
           colors = color.split(',');
-          bgcolor = '-moz-linear-gradient(top, rgb(' 
-            + util.rgbAdd(colors, 30).join(',')
-            + '), rgb(' + util.rgbAdd(colors, -30).join(',') + '))'
+          var from = util.rgbAdd(colors, 30).join(','),
+            to = util.rgbAdd(colors, -30).join(',');
+          switch (cssGradientEngine) {
+            case 'gecko':
+              bgcolor = '-moz-linear-gradient(top, rgb(' + from + '), rgb(' + to + '))';
+              break;
+            case 'webkit':
+              bgcolor = '-webkit-gradient(linear, left top, left bottom, from(rgb(' + from + ')), to(rgb(' + to + ')))';
+              break;
+            default:
+              bgcolor = 'rgb(' + colors + ')';
+          }
         }
         // .gac_xxx is google auto complete
         gm.css('body {\
@@ -1828,7 +1851,9 @@
           width: 151px !important;\
           left: -142px;\
           -moz-box-shadow: 0 1px 5px #000;\
+          -webkit-box-shadow: 0 1px 5px #000;\
           -moz-border-radius: 0 10px 10px 0;\
+          -webkit-border-radius: 0 10px 10px 0;\
           background: rgba(' + setting.backgroundColor.val + ', 0.9);\
         }\
         #leftnav:hover {\
@@ -1868,7 +1893,9 @@
             width: 264px;\
             background: rgba(' + setting.backgroundColor.val + ', 0.9);\
             -moz-box-shadow: 0 1px 5px #000;\
+            -webkit-box-shadow: 0 1px 5px #000;\
             -moz-border-radius: 10px 0 0 10px;\
+            -webkit-border-radius: 10px 0 0 10px;\
             margin: 5px;\
             padding-left: 5px;\
             padding-top: 5px;\
@@ -1938,6 +1965,7 @@
       addCss: function() {
         gm.css('.gpp-rs {\
           -moz-box-shadow: 0 1px ' + setting.rsShadow.val + 'px #000;\
+          -webkit-box-shadow: 0 1px ' + setting.rsShadow.val + 'px #000;\
         }');
       }
     },
@@ -1946,7 +1974,8 @@
       enabled: +setting.rsRadius.val > 0,
       addCss: function() {
         var radius = +setting.rsRadius.val;
-        var css = '-moz-border-radius: ' + radius + 'px;';
+        var css = '-moz-border-radius: ' + radius + 'px;'
+          + '-webkit-border-radius: ' + radius + 'px;';
         var padd = 5;
         if (radius / 2 > 5) {
           padd = Math.ceil(radius / 2);
@@ -2054,26 +2083,44 @@
       bgCss: function(rgb, eff) {
         switch (eff) {
           case '2': 
-            var fin = [+rgb[0] - 35, +rgb[1] - 15, rgb[2] - 30]; // more green
-            return '-moz-linear-gradient(top, rgb(' 
-              + util.rgbAdd(rgb, 30).join(',') + '), rgb(' 
-              + fin
-              + '))';
+            var from = util.rgbAdd(rgb, 30).join(','),
+              to = [+rgb[0] - 35, +rgb[1] - 15, rgb[2] - 30]; // more green
+            switch (cssGradientEngine) {
+              case 'gecko':
+                return '-moz-linear-gradient(top, rgb(' + from + '), rgb(' + to + '))';
+              case 'webkit':
+                return '-webkit-gradient(linear, left top, left bottom, from(rgb(' + from + ')), to(rgb(' + to + ')))';
+              default:
+                return 'rgb(' + rgb.join(',') + ')';
+            }
           case '3':
-            var fin = [+rgb[0] - 5, +rgb[1] + 15, rgb[2]]; // more green
-            return '-moz-linear-gradient(top, rgb('
-              + util.rgbAdd(rgb, 50).join(',') + ') 5%, rgb('
-              + util.rgbAdd(rgb, 10).join(',') + ') 40%, rgb('
-              + util.rgbAdd(rgb, -40).join(',') + ') 40%, rgb('
-              + fin.join(',') +
-            '))';
+            var from = util.rgbAdd(rgb, 50).join(','),
+              stop1 = util.rgbAdd(rgb, 10).join(','),
+              stop2 = util.rgbAdd(rgb, -40).join(','),
+              to = [+rgb[0] - 5, +rgb[1] + 15, rgb[2]]; // more green
+              switch (cssGradientEngine) {
+                case 'gecko':
+                  return '-moz-linear-gradient(top,'
+                    + 'rgb(' + from + '),'
+                    + 'rgb(' + stop1 + ') 40%,'
+                    + 'rgb(' + stop2 + ') 40%,'
+                    + 'rgb(' + to + '))';
+                case 'webkit':
+                  return '-webkit-gradient(linear, left top, left bottom,'
+                    + 'from(rgb(' + from + ')),'
+                    + 'color-stop(40%, rgb(' + stop1 + ')),'
+                    + 'color-stop(40%, rgb(' + stop2 + ')),'
+                    + 'to(rgb(' + to + ')))';
+                default:
+                  return 'rgb(' + rgb.join(',') + ')';
+              }
           default:
-            return 'rgb(' + rgb.join(',') + ')';
+            return 'background: rgb(' + rgb.join(',') + ');';
         }
       },
       addCss: function() {
         if (setting.rsColorMethod.val === '1') {
-          gm.css('.gpp-rs { background: ' 
+          gm.css('.gpp-rs { background:' 
             + this.bgCss(setting.rsColorSchema.val.split(','), setting.rsColorEffect.val) 
             + '; }');
         }
