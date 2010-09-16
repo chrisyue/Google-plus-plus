@@ -15,12 +15,17 @@
   var ver = '2.0.0';
   var keyword = document.getElementsByName('q')[0].value;
   // check if has working greasemonkey api
-  var isGmStorageWorking = (function() {
-    if (!GM_setValue) {
-      return false;
+  var storageHandler = (function() {
+    if (GM_setValue) {
+      GM_setValue('test', 1);
+      if (GM_getValue('test')) {
+        return 'greasemonkey'
+      }
     }
-    GM_setValue('test', 1);
-    return !!GM_getValue('test');
+    if (localStorage) {
+      return 'localStorage';
+    }
+    return 'cookie';
   })();
   // check the gradient css engine;
   var cssGradientEngine = (function() {
@@ -309,10 +314,22 @@
       return ret;
     },
     createLoadingImage: function() {
+      if (!this.addedLoadingImageCss) {
+        gm.css('.gpp-loadingImage { opacity: .7 }');
+        this.addedLoadingImageCss = true;
+      }
       return $('<img>').attr({
         'alt': 'loading',
         'src': resource.loadingImage
-      });
+      }).addClass('gpp-loadingImage');
+    },
+    // common containers are used for containning loading image and tips, warning, etc
+    createModuleFrameCommonContainer: function() {
+      if (!this.addedModuleFrameCommonContainerCss) {
+        gm.css('.gpp-moduleFrameCommonContainer { text-align: center; }');
+        this.addedModuleFrameCommonContainerCss = true;
+      }
+      return $("<p>").addClass('gpp-moduleFrameCommonContainer');
     },
     createModuleFrame: function(title) {
       if (!this.addedModuleFrameCss) {
@@ -347,22 +364,21 @@
       var header = $('<h3>').html(title).appendTo(frame);
       return frame.appendTo(myRSBar.getElm());
     },
-    createModuleFrameCommonContainer: function() {
-      if (!this.addedModuleFrameCommonContainerCss) {
-        gm.css('.gpp-moduleFrameCommonContainer { text-align: center; }');
-        this.addedModuleFrameCommonContainerCss = true;
-      }
-      return $("<p>").addClass('gpp-moduleFrameCommonContainer');
+    //
+    createModuleFrameWithContainer: function(title) {
+      return this.createModuleFrame(title)
+        .append(this.createModuleFrameCommonContainer().append(this.createLoadingImage()))
     }
   };
+  
   // go gm api
   var gm = {
     get: (function() {
-      if (isGmStorageWorking) {
+      if (storageHandler === 'greasemonkey') {
         return function(key, def) {
           return GM_getValue(key, def);
         };
-      } else if (localStorage) {
+      } else if (storageHandler === 'localStorage') {
         return function(key, def) {
           var ret = localStorage.getItem(key);
           if (ret === undefined || ret === null) {
@@ -374,11 +390,11 @@
       }
     })(),
     set: (function() {
-      if (isGmStorageWorking) {
+      if (storageHandler === 'greasemonkey') {
         return function(key, val) {
           GM_setValue(key, val);
         };
-      } else if (localStorage) {
+      } else if (storageHandler === 'localStorage') {
         return function(key, val) {
           localStorage.setItem(key, val);
         };
@@ -1317,8 +1333,8 @@
       name: __('Videos'),
       groupLv2: groupLv2.otherRs
     },
-    moreDefination: {
-      name: __('Definations'),
+    moreDefinition: {
+      name: __('Definitions'),
       groupLv2: groupLv2.otherRs
     },
     moreMessage: {
@@ -1580,6 +1596,15 @@
       name: __('Flickr'),
       groupLv3: groupLv3.morePicture,
       val: gm.get('gpp-flickr', '0'),
+      html: function() {
+        return cfgWidget.bool(this.id, this.val);
+      }
+    },
+    // go setting.wikipedia
+    wikipedia: {
+      name: __('Wikipedia'),
+      groupLv3: groupLv3.moreDefinition,
+      val: gm.get('gpp-wikipedia', '0'),
       html: function() {
         return cfgWidget.bool(this.id, this.val);
       }
@@ -2357,7 +2382,7 @@
         while (header.next().size()) { // clear the result ..
           header.next().remove()
         }
-        var loadingImage = util.createModuleFrameCommonContainer()
+        util.createModuleFrameCommonContainer()
           .append(util.createLoadingImage())
           .appendTo(frame);
         // flickr api params
@@ -2382,7 +2407,7 @@
             'Accept': 'text/html',
           },
           onload: function(response) {
-            loadingImage.remove();
+            frame.find('.gpp-moduleFrameCommonContainer').remove();
             var data = eval("(" + response.responseText + ")");
             if (data.photos.total == 0) { // No any photo ...
               util.createModuleFrameCommonContainer()
@@ -2434,6 +2459,53 @@
           }
         };
         gm.xhr(request);
+      }
+    },
+    // go com.wikipedia
+    wikipedia: {
+      enabled: +setting.wikipedia.val,
+      addCss: function() {
+        gm.css('.gpp-wikipedia {\
+          background: #fff url(http://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png) right bottom no-repeat;\
+        }\
+        .gpp-wikipedia ul {\
+          list-style-image: url(http://en.wikipedia.org/favicon.ico);\
+          margin: 10px 10px 40px 35px;\
+          padding: 0;\
+        }\
+        .gpp-wikipedia a {\
+          position: relative;\
+          top: -3px;\
+        }');
+      },
+      run: function() {
+        var frame = util.createModuleFrameWithContainer(__('Wikipedia'));
+        gm.xhr({
+          method: 'GET',
+          url: 'http://' + __('en') 
+            + '.wikipedia.org/w/api.php?action=opensearch&search=' 
+            + encodeURIComponent(keyword),
+          headers: {
+            'User-agent': 'Mozilla/4.0 (compatible) Greasemonkey',
+            'Accept': 'text/html',
+          },
+          onload: function(response) {
+            frame.find('.gpp-moduleFrameCommonContainer').remove();
+            var rs = eval("(" + response.responseText + ")")[1];
+            var len = rs.length;
+            if (len) {
+              frame.addClass('gpp-wikipedia');
+              var ul = $('<ul>').appendTo(frame);
+              for (var i = 0; i < len; i++) {
+                $('<li>').append($('<a>').attr({
+                  'href': 'http://' + __('en') + '.wikipedia.org/wiki/' + rs[i]
+                }).html(rs[i])).appendTo(ul);
+              }
+            } else {
+              frame.append(util.createModuleFrameCommonContainer().html(__('No related definition')));
+            }
+          }
+        });
       }
     }
   };
