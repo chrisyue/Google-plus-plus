@@ -1857,6 +1857,7 @@
       enabled: +setting.autoHideLeftSidebar.val,
       addCss: function() {
         gm.css('#leftnav {\
+          z-index: 100;\
           width: 151px !important;\
           left: -142px;\
           -moz-box-shadow: 0 1px 5px #000;\
